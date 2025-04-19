@@ -167,10 +167,10 @@ public sealed interface BankAccountCommand {
          */
         public Protocol() {
             this.messageConverter = com.github.j5ik2o.pekko.persistence.effector.javadsl.MessageConverter.create(
-                    events -> new EventPersisted(events),
-                    state -> new StatePersisted(state),
-                    state -> new StateRecovered(state),
-                    maxSequenceNumber -> new SnapshotShotsDeleted(maxSequenceNumber)
+                    EventPersisted::new,
+                    StatePersisted::new,
+                    StateRecovered::new,
+                    SnapshotShotsDeleted::new
             );
         }
 
