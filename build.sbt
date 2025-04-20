@@ -35,6 +35,31 @@ val publishSettings = Seq(
   ),
 )
 
+val testSettings = Seq(
+  libraryDependencies ++= Seq(
+    slf4j.julToSlf4J % Test,
+    logback.classic % Test,
+    scalatest.scalatest % Test,
+    apachePekko.actorTestKitTyped % Test,
+    apachePekko.serializationJackson % Test,
+    "org.iq80.leveldb" % "leveldb" % "0.12" % Test,
+    "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8" % Test,
+  ),
+  // IntelliJでのテスト実行時にLevelDBの依存関係が確実に含まれるようにする
+  Compile / unmanagedClasspath += baseDirectory.value / "target" / "scala-3.6.4" / "test-classes",
+  Test / testOptions += Tests.Setup { () =>
+    val journalDir = new java.io.File("target/journal")
+    val snapshotDir = new java.io.File("target/snapshot")
+    if (!journalDir.exists()) journalDir.mkdirs()
+    if (!snapshotDir.exists()) snapshotDir.mkdirs()
+  },
+  Test / fork := true,
+  Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oD"),
+  Test / javaOptions += s"-Djacoco-agent.destfile=target/scala-${scalaVersion.value}/jacoco/data/jacoco.exec",
+  jacocoIncludes := Seq("*com.github.j5ik2o*"),
+  jacocoExcludes := Seq(),
+)
+
 // 共通設定
 val baseSettings = Seq(
   javacOptions ++= Seq("-source", "17", "-target", "17"),
@@ -71,6 +96,7 @@ lazy val root = (project in file("."))
 // ライブラリプロジェクト（publish対象）
 lazy val library = (project in file("library"))
   .settings(baseSettings)
+  .settings(testSettings)
   .settings(publishSettings)
   .settings(
     name := "pekko-persistence-effector",
@@ -80,33 +106,13 @@ lazy val library = (project in file("library"))
       apachePekko.slf4j,
       apachePekko.actorTyped,
       apachePekko.persistence,
-      slf4j.julToSlf4J % Test,
-      logback.classic % Test,
-      scalatest.scalatest % Test,
-      apachePekko.actorTestKitTyped % Test,
-      apachePekko.serializationJackson % Test,
-      "org.iq80.leveldb" % "leveldb" % "0.12" % Test,
-      "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8" % Test,
     ),
-    // IntelliJでのテスト実行時にLevelDBの依存関係が確実に含まれるようにする
-    Compile / unmanagedClasspath += baseDirectory.value / "target" / "scala-3.6.4" / "test-classes",
-    Test / testOptions += Tests.Setup { () =>
-      val journalDir = new java.io.File("target/journal")
-      val snapshotDir = new java.io.File("target/snapshot")
-      if (!journalDir.exists()) journalDir.mkdirs()
-      if (!snapshotDir.exists()) snapshotDir.mkdirs()
-    },
-    Test / fork := true,
-    Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oD"),
-    Test / javaOptions += s"-Djacoco-agent.destfile=target/scala-${scalaVersion.value}/jacoco/data/jacoco.exec",
-    jacocoIncludes := Seq("*com.github.j5ik2o*"),
-    jacocoExcludes := Seq(),
   )
 
 // サンプルプロジェクト（publishなし）
 lazy val example = (project in file("example"))
-  .dependsOn(library)
   .settings(baseSettings)
+  .settings(testSettings)
   .settings(
     name := "pekko-persistence-effector-example",
     publish / skip := true,
@@ -114,6 +120,7 @@ lazy val example = (project in file("example"))
     libraryDependencies ++= Seq(
       logback.classic,
       apachePekko.slf4j,
+      apachePekko.persistenceTyped,
     ),
   )
   .dependsOn(library)
