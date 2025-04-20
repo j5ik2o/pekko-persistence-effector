@@ -165,8 +165,6 @@ object PersistenceEffector {
    *   Initial state
    * @param applyEvent
    *   Event application function
-   * @param messageConverter
-   *   Message converter
    * @param stashSize
    *   Stash size
    * @param snapshotCriteria
@@ -175,6 +173,8 @@ object PersistenceEffector {
    *   Retention criteria
    * @param backoffConfig
    *   Backoff configuration
+   * @param messageConverter
+   *   Message converter
    * @param onReady
    *   Callback when ready
    * @return
@@ -184,11 +184,11 @@ object PersistenceEffector {
     persistenceId: String,
     initialState: S,
     applyEvent: BiFunction[S, E, S],
-    messageConverter: MessageConverter[S, E, M],
     stashSize: Int = Int.MaxValue,
-    snapshotCriteria: Optional[SnapshotCriteria[S, E]] = Optional.empty(),
-    retentionCriteria: Optional[RetentionCriteria] = Optional.empty(),
-    backoffConfig: Optional[BackoffConfig] = Optional.empty(),
+    snapshotCriteria: Optional[SnapshotCriteria[S, E]],
+    retentionCriteria: Optional[RetentionCriteria],
+    backoffConfig: Optional[BackoffConfig],
+    messageConverter: MessageConverter[S, E, M],
     onReady: BiFunction[S, PersistenceEffector[S, E, M], Behavior[M]],
   ): Behavior[M] = {
     val config = PersistenceEffectorConfig.create[S, E, M](
@@ -206,6 +206,40 @@ object PersistenceEffector {
   }
 
   /**
+   * Create PersistenceEffector in persistence mode
+   *
+   * @param persistenceId
+   *   Persistence ID
+   * @param initialState
+   *   Initial state
+   * @param applyEvent
+   *   Event application function
+   * @param onReady
+   *   Callback when ready
+   * @return
+   *   Behavior
+   */
+  def persisted[S, E, M](
+    persistenceId: String,
+    initialState: S,
+    applyEvent: BiFunction[S, E, S],
+    onReady: BiFunction[S, PersistenceEffector[S, E, M], Behavior[M]],
+  ): Behavior[M] = {
+    val config = PersistenceEffectorConfig.create[S, E, M](
+      persistenceId = persistenceId,
+      initialState = initialState,
+      applyEvent = applyEvent,
+      persistenceMode = PersistenceMode.PERSISTENCE,
+      stashSize = Int.MaxValue,
+      snapshotCriteria = Optional.empty(),
+      retentionCriteria = Optional.empty(),
+      backoffConfig = Optional.empty(),
+      messageConverter = MessageConverter.defaultFunctions,
+    )
+    build(config, onReady)
+  }
+
+  /**
    * Create PersistenceEffector in in-memory mode
    *
    * @param persistenceId
@@ -214,8 +248,6 @@ object PersistenceEffector {
    *   Initial state
    * @param applyEvent
    *   Event application function
-   * @param messageConverter
-   *   Message converter
    * @param stashSize
    *   Stash size
    * @param snapshotCriteria
@@ -224,6 +256,8 @@ object PersistenceEffector {
    *   Retention criteria
    * @param backoffConfig
    *   Backoff configuration
+   * @param messageConverter
+   *   Message converter
    * @param onReady
    *   Callback when ready
    * @return
@@ -233,11 +267,11 @@ object PersistenceEffector {
     persistenceId: String,
     initialState: S,
     applyEvent: BiFunction[S, E, S],
-    messageConverter: MessageConverter[S, E, M],
     stashSize: Int = Int.MaxValue,
     snapshotCriteria: Optional[SnapshotCriteria[S, E]] = Optional.empty(),
     retentionCriteria: Optional[RetentionCriteria] = Optional.empty(),
     backoffConfig: Optional[BackoffConfig] = Optional.empty(),
+    messageConverter: MessageConverter[S, E, M] = MessageConverter.defaultFunctions,
     onReady: BiFunction[S, PersistenceEffector[S, E, M], Behavior[M]],
   ): Behavior[M] = {
     val config = PersistenceEffectorConfig.create[S, E, M](
@@ -250,6 +284,40 @@ object PersistenceEffector {
       snapshotCriteria = snapshotCriteria,
       retentionCriteria = retentionCriteria,
       backoffConfig = backoffConfig,
+    )
+    build(config, onReady)
+  }
+
+  /**
+   * Create PersistenceEffector in in-memory mode
+   *
+   * @param persistenceId
+   *   Persistence ID
+   * @param initialState
+   *   Initial state
+   * @param applyEvent
+   *   Event application function
+   * @param onReady
+   *   Callback when ready
+   * @return
+   *   Behavior
+   */
+  def ephemeral[S, E, M](
+    persistenceId: String,
+    initialState: S,
+    applyEvent: BiFunction[S, E, S],
+    onReady: BiFunction[S, PersistenceEffector[S, E, M], Behavior[M]],
+  ): Behavior[M] = {
+    val config = PersistenceEffectorConfig.create[S, E, M](
+      persistenceId = persistenceId,
+      initialState = initialState,
+      applyEvent = applyEvent,
+      persistenceMode = PersistenceMode.EPHEMERAL,
+      stashSize = Int.MaxValue,
+      snapshotCriteria = Optional.empty(),
+      retentionCriteria = Optional.empty(),
+      backoffConfig = Optional.empty(),
+      messageConverter = MessageConverter.defaultFunctions,
     )
     build(config, onReady)
   }

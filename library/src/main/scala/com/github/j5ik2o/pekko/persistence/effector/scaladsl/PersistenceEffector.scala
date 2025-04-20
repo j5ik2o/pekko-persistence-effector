@@ -177,11 +177,11 @@ object PersistenceEffector {
     persistenceId: String,
     initialState: S,
     applyEvent: (S, E) => S,
-    messageConverter: MessageConverter[S, E, M],
     stashSize: Int = Int.MaxValue,
     snapshotCriteria: Option[SnapshotCriteria[S, E]] = None,
     retentionCriteria: Option[RetentionCriteria] = None,
     backoffConfig: Option[BackoffConfig] = None,
+    messageConverter: MessageConverter[S, E, M] = MessageConverter.defaultFunctions,
   )(onReady: PartialFunction[(S, PersistenceEffector[S, E, M]), Behavior[M]])(using
     context: ActorContext[M],
   ): Behavior[M] = {
@@ -229,11 +229,11 @@ object PersistenceEffector {
     persistenceId: String,
     initialState: S,
     applyEvent: (S, E) => S,
-    messageConverter: MessageConverter[S, E, M],
     stashSize: Int = Int.MaxValue,
     snapshotCriteria: Option[SnapshotCriteria[S, E]] = None,
     retentionCriteria: Option[RetentionCriteria] = None,
     backoffConfig: Option[BackoffConfig] = None,
+    messageConverter: MessageConverter[S, E, M] = MessageConverter.defaultFunctions,
   )(onReady: PartialFunction[(S, PersistenceEffector[S, E, M]), Behavior[M]])(using
     context: ActorContext[M],
   ): Behavior[M] = {
