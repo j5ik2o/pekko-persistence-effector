@@ -16,6 +16,7 @@
 ### 主な特徴
 
 - **従来のアクタープログラミングスタイル**: 通常の Behavior ベースのアクタープログラミングスタイルを維持しながらイベントソーシングが可能 (Scala & Java)。
+- **マルチ言語サポート**: Scala、Java、Kotlinアプリケーションで利用可能。
 - **ドメインロジックの単一実行**: コマンドハンドラでのドメインロジックの二重実行問題を解消。
 - **DDDとの高い親和性**: ドメインオブジェクトとのシームレスな統合をサポート。
 - **段階的な実装**: 最初はインメモリモードで開発し、後から永続化対応へ移行可能。
@@ -293,16 +294,16 @@ object BankAccountAggregate {
 より詳細な実装例については、以下のファイルを参照してください：
 
 **Scala DSL:**
-- 集約: [BankAccountAggregate.scala](src/test/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccountAggregate.scala)
-- ドメインモデル: [BankAccount.scala](src/test/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccount.scala)
-- コマンド: [BankAccountCommand.scala](src/test/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccountCommand.scala)
-- イベント: [BankAccountEvent.scala](src/test/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccountEvent.scala)
+- 集約: [BankAccountAggregate.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/pe/BankAccountAggregate.scala)
+- ドメインモデル: [BankAccount.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/pe/BankAccount.scala)
+- コマンド: [BankAccountCommand.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccountCommand.scala)
+- イベント: [BankAccountEvent.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccountEvent.scala)
 
 **Java DSL:**
-- 集約: [BankAccountAggregate.java](src/test/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountAggregate.java)
-- ドメインモデル: [BankAccount.java](src/test/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccount.java)
-- コマンド: [BankAccountCommand.java](src/test/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountCommand.java)
-- イベント: [BankAccountEvent.java](src/test/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountEvent.java)
+- 集約: [BankAccountAggregate.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/pe/BankAccountAggregate.java)
+- ドメインモデル: [BankAccount.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/pe/BankAccount.java)
+- コマンド: [BankAccountCommand.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountCommand.java)
+- イベント: [BankAccountEvent.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountEvent.java)
 
 ## このライブラリを使用するシーン
 
@@ -318,6 +319,8 @@ object BankAccountAggregate {
 
 注意: 本ライブラリは `pekko-persistence-typed` に依存していません。`pekko-persistence-typed` を依存関係に追加しなくても本ライブラリを使用できます。
 
+### SBT
+
 `build.sbt` に以下を追加してください：
 
 ```scala
@@ -329,7 +332,48 @@ libraryDependencies ++= Seq(
 )
 ```
 
-または Maven (`pom.xml`) の場合:
+### Gradle
+
+`build.gradle` に以下を追加してください：
+
+```groovy
+repositories {
+    maven {
+        url = uri("https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector")
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+            password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
+}
+
+dependencies {
+    implementation 'com.github.j5ik2o:pekko-persistence-effector_3:<最新バージョン>' // または _2.13
+}
+```
+
+Kotlin DSL (`build.gradle.kts`) の場合：
+
+```kotlin
+repositories {
+    maven {
+        url = uri("https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector")
+        credentials {
+            username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
+            password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
+}
+
+dependencies {
+    implementation("com.github.j5ik2o:pekko-persistence-effector_3:<最新バージョン>") // または _2.13
+}
+```
+
+### Maven
+
+Maven (`pom.xml`) の場合：
+
 ```xml
 <repositories>
   <repository>
