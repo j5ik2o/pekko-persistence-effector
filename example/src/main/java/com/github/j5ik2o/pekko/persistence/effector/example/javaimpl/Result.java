@@ -9,40 +9,37 @@ import java.util.Objects;
  * @param <E> Event type
  */
 public class Result<S, E> {
-    private final S state;
-    private final E event;
+  private final S state;
+  private final E event;
 
-    public Result(S state, E event) {
-        this.state = state;
-        this.event = event;
-    }
+  public Result(S state, E event) {
+    this.state = state;
+    this.event = event;
+  }
 
-    public S getState() {
-        return state;
-    }
+  public S getState() {
+    return state;
+  }
 
-    public E getEvent() {
-        return event;
-    }
+  public E getEvent() {
+    return event;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Result<?, ?> result = (Result<?, ?>) o;
-        return Objects.equals(state, result.state) && Objects.equals(event, result.event);
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Result<?, ?> result = (Result<?, ?>) o;
+    return Objects.equals(state, result.state) && Objects.equals(event, result.event);
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(state, event);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(state, event);
+  }
 
-    @Override
-    public String toString() {
-        return "Result{" +
-                "state=" + state +
-                ", event=" + event +
-                '}';
-    }
+  @Override
+  public String toString() {
+    return "Result{" + "state=" + state + ", event=" + event + '}';
+  }
 }

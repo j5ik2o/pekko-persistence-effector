@@ -2,9 +2,7 @@ package com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.standard;
 
 import com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.BankAccountId;
 
-/**
- * Sealed interface representing the state of a bank account
- */
+/** Sealed interface representing the state of a bank account */
 public sealed interface BankAccountAggregateState {
   /**
    * Get the aggregate ID
@@ -31,7 +29,8 @@ public sealed interface BankAccountAggregateState {
    * @param aggregateId Aggregate ID
    * @param bankAccount Bank account
    */
-  record Created(BankAccountId aggregateId, BankAccount bankAccount) implements BankAccountAggregateState {
+  record Created(BankAccountId aggregateId, BankAccount bankAccount)
+      implements BankAccountAggregateState {
     @Override
     public BankAccountId getAggregateId() {
       return aggregateId;

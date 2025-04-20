@@ -1,4 +1,5 @@
 import Dependencies.*
+import com.google.googlejavaformat.java.JavaFormatterOptions
 
 ThisBuild / organization := "com.github.j5ik2o"
 ThisBuild / organizationName := "com.github.j5ik2o"
@@ -128,3 +129,4 @@ lazy val example = (project in file("example"))
 addCommandAlias("lint", ";scalafmtCheck;test:scalafmtCheck;scalafmtSbtCheck;scalafixAll --check")
 addCommandAlias("fmt", ";scalafmtAll;scalafmtSbt;scalafix RemoveUnused")
 addCommandAlias("testCoverage", ";test;jacocoAggregateReport")
+addCommandAlias("javaFormat", "spotlessApply")

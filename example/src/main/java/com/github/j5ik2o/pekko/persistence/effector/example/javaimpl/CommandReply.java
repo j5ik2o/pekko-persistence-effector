@@ -2,9 +2,7 @@ package com.github.j5ik2o.pekko.persistence.effector.example.javaimpl;
 
 import java.io.Serializable;
 
-/**
- * Sealed interface representing command replies
- */
+/** Sealed interface representing command replies */
 public sealed interface CommandReply extends Serializable {
   /**
    * Get the aggregate ID
@@ -20,15 +18,15 @@ public sealed interface CommandReply extends Serializable {
    */
   boolean isSuccessful();
 
-
   /**
    * Get balance reply
    *
    * @param aggregateId Aggregate ID
-   * @param balance     Balance
-   * @param error       Error
+   * @param balance Balance
+   * @param error Error
    */
-  record GetBalanceReply(BankAccountId aggregateId, Money balance, BankAccountError error) implements CommandReply {
+  record GetBalanceReply(BankAccountId aggregateId, Money balance, BankAccountError error)
+      implements CommandReply {
     @Override
     public BankAccountId getAggregateId() {
       return aggregateId;
@@ -43,7 +41,7 @@ public sealed interface CommandReply extends Serializable {
      * Create a successful reply
      *
      * @param aggregateId Aggregate ID
-     * @param balance     Balance
+     * @param balance Balance
      * @return Reply
      */
     public static GetBalanceReply succeeded(BankAccountId aggregateId, Money balance) {
@@ -54,7 +52,7 @@ public sealed interface CommandReply extends Serializable {
      * Create a failed reply
      *
      * @param aggregateId Aggregate ID
-     * @param error       Error
+     * @param error Error
      * @return Reply
      */
     public static GetBalanceReply failed(BankAccountId aggregateId, BankAccountError error) {
@@ -66,7 +64,7 @@ public sealed interface CommandReply extends Serializable {
    * Stop reply
    *
    * @param aggregateId Aggregate ID
-   * @param error       Error
+   * @param error Error
    */
   record StopReply(BankAccountId aggregateId, BankAccountError error) implements CommandReply {
     @Override
@@ -93,7 +91,7 @@ public sealed interface CommandReply extends Serializable {
      * Create a failed reply
      *
      * @param aggregateId Aggregate ID
-     * @param error       Error
+     * @param error Error
      * @return Reply
      */
     public static StopReply failed(BankAccountId aggregateId, BankAccountError error) {
@@ -105,7 +103,7 @@ public sealed interface CommandReply extends Serializable {
    * Create reply
    *
    * @param aggregateId Aggregate ID
-   * @param error       Error
+   * @param error Error
    */
   record CreateReply(BankAccountId aggregateId, BankAccountError error) implements CommandReply {
     @Override
@@ -132,7 +130,7 @@ public sealed interface CommandReply extends Serializable {
      * Create a failed reply
      *
      * @param aggregateId Aggregate ID
-     * @param error       Error
+     * @param error Error
      * @return Reply
      */
     public static CreateReply failed(BankAccountId aggregateId, BankAccountError error) {
@@ -144,10 +142,11 @@ public sealed interface CommandReply extends Serializable {
    * Deposit cash reply
    *
    * @param aggregateId Aggregate ID
-   * @param amount      Amount
-   * @param error       Error
+   * @param amount Amount
+   * @param error Error
    */
-  record DepositCashReply(BankAccountId aggregateId, Money amount, BankAccountError error) implements CommandReply {
+  record DepositCashReply(BankAccountId aggregateId, Money amount, BankAccountError error)
+      implements CommandReply {
     @Override
     public BankAccountId getAggregateId() {
       return aggregateId;
@@ -162,7 +161,7 @@ public sealed interface CommandReply extends Serializable {
      * Create a successful reply
      *
      * @param aggregateId Aggregate ID
-     * @param amount      Amount
+     * @param amount Amount
      * @return Reply
      */
     public static DepositCashReply succeeded(BankAccountId aggregateId, Money amount) {
@@ -173,7 +172,7 @@ public sealed interface CommandReply extends Serializable {
      * Create a failed reply
      *
      * @param aggregateId Aggregate ID
-     * @param error       Error
+     * @param error Error
      * @return Reply
      */
     public static DepositCashReply failed(BankAccountId aggregateId, BankAccountError error) {
@@ -185,10 +184,11 @@ public sealed interface CommandReply extends Serializable {
    * Withdraw cash reply
    *
    * @param aggregateId Aggregate ID
-   * @param amount      Amount
-   * @param error       Error
+   * @param amount Amount
+   * @param error Error
    */
-  record WithdrawCashReply(BankAccountId aggregateId, Money amount, BankAccountError error) implements CommandReply {
+  record WithdrawCashReply(BankAccountId aggregateId, Money amount, BankAccountError error)
+      implements CommandReply {
     @Override
     public BankAccountId getAggregateId() {
       return aggregateId;
@@ -203,7 +203,7 @@ public sealed interface CommandReply extends Serializable {
      * Create a successful reply
      *
      * @param aggregateId Aggregate ID
-     * @param amount      Amount
+     * @param amount Amount
      * @return Reply
      */
     public static WithdrawCashReply succeeded(BankAccountId aggregateId, Money amount) {
@@ -214,7 +214,7 @@ public sealed interface CommandReply extends Serializable {
      * Create a failed reply
      *
      * @param aggregateId Aggregate ID
-     * @param error       Error
+     * @param error Error
      * @return Reply
      */
     public static WithdrawCashReply failed(BankAccountId aggregateId, BankAccountError error) {
