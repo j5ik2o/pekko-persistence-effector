@@ -126,7 +126,8 @@ lazy val example = (project in file("example"))
   .dependsOn(library)
 
 // 既存のコマンドエイリアスを維持
-addCommandAlias("lint", ";scalafmtCheck;test:scalafmtCheck;scalafmtSbtCheck;scalafixAll --check")
-addCommandAlias("fmt", ";scalafmtAll;scalafmtSbt;scalafix RemoveUnused")
+addCommandAlias(
+  "lint",
+  ";scalafmtCheck;test:scalafmtCheck;scalafmtSbtCheck;scalafixAll --check;javafmtCheckAll")
+addCommandAlias("fmt", ";scalafmtAll;scalafmtSbt;scalafix RemoveUnused;javafmtAll")
 addCommandAlias("testCoverage", ";test;jacocoAggregateReport")
-addCommandAlias("javaFormat", "spotlessApply")
