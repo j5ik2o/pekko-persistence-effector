@@ -5,8 +5,8 @@ import com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.*
 
 final case class BankAccount(
   bankAccountId: BankAccountId,
-  limit: Money = Money(100000, Money.JPY),
-  balance: Money = Money(0, Money.JPY),
+  limit: Money,
+  balance: Money,
 ) {
 
   def add(amount: Money): Either[BankAccountError, BankAccount] =
