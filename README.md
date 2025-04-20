@@ -16,6 +16,7 @@ A library for efficient implementation of event sourcing and state transitions w
 ### Key Features
 
 - **Traditional Actor Programming Style**: Enables event sourcing while maintaining the usual Behavior-based actor programming style (Scala & Java).
+- **Multi-Language Support**: Works with Scala, Java, and Kotlin applications.
 - **Single Execution of Domain Logic**: Eliminates the problem of double execution of domain logic in command handlers.
 - **High Compatibility with DDD**: Supports seamless integration with domain objects.
 - **Incremental Implementation**: Start with in-memory mode during development, then migrate to persistence later.
@@ -293,16 +294,16 @@ This example demonstrates:
 For more detailed implementation examples, see the following files:
 
 **Scala DSL:**
-- Aggregate: [BankAccountAggregate.scala](src/test/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccountAggregate.scala)
-- Domain Model: [BankAccount.scala](src/test/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccount.scala)
-- Commands: [BankAccountCommand.scala](src/test/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccountCommand.scala)
-- Events: [BankAccountEvent.scala](src/test/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccountEvent.scala)
+- Aggregate: [BankAccountAggregate.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/pe/BankAccountAggregate.scala)
+- Domain Model: [BankAccount.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/pe/BankAccount.scala)
+- Commands: [BankAccountCommand.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccountCommand.scala)
+- Events: [BankAccountEvent.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccountEvent.scala)
 
 **Java DSL:**
-- Aggregate: [BankAccountAggregate.java](src/test/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountAggregate.java)
-- Domain Model: [BankAccount.java](src/test/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccount.java)
-- Commands: [BankAccountCommand.java](src/test/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountCommand.java)
-- Events: [BankAccountEvent.java](src/test/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountEvent.java)
+- Aggregate: [BankAccountAggregate.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/pe/BankAccountAggregate.java)
+- Domain Model: [BankAccount.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/pe/BankAccount.java)
+- Commands: [BankAccountCommand.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountCommand.java)
+- Events: [BankAccountEvent.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountEvent.java)
 
 ## When to Use This Library
 
@@ -318,6 +319,8 @@ This library is particularly well-suited for:
 
 Note: This library does not depend on `pekko-persistence-typed`. You can use this library even without adding `pekko-persistence-typed` as a dependency.
 
+### SBT
+
 Add the following to your `build.sbt`:
 
 ```scala
@@ -329,7 +332,48 @@ libraryDependencies ++= Seq(
 )
 ```
 
-Or for Maven (`pom.xml`):
+### Gradle
+
+Add the following to your `build.gradle`:
+
+```groovy
+repositories {
+    maven {
+        url = uri("https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector")
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+            password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
+}
+
+dependencies {
+    implementation 'com.github.j5ik2o:pekko-persistence-effector_3:<latest_version>' // Or _2.13
+}
+```
+
+For Kotlin DSL (`build.gradle.kts`):
+
+```kotlin
+repositories {
+    maven {
+        url = uri("https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector")
+        credentials {
+            username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
+            password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
+}
+
+dependencies {
+    implementation("com.github.j5ik2o:pekko-persistence-effector_3:<latest_version>") // Or _2.13
+}
+```
+
+### Maven
+
+Add the following to your `pom.xml`:
+
 ```xml
 <repositories>
   <repository>
@@ -349,6 +393,7 @@ Or for Maven (`pom.xml`):
   </dependency>
 </dependencies>
 ```
+
 *(Remember to configure authentication for GitHub Packages)*
 
 ## License
