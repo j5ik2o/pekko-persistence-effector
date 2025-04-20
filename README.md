@@ -287,7 +287,7 @@ This example demonstrates:
 5. State-specific message handlers
 6. Error handling for both domain validation and persistence failures
 
-*(See Java DSL examples in the `src/test/java` directory)*
+*(See Java DSL examples in the `example/` directory)*
 
 ## Example Code Files
 
