@@ -116,6 +116,7 @@ lazy val example = (project in file("example"))
       apachePekko.slf4j,
     ),
   )
+  .dependsOn(library)
 
 // 既存のコマンドエイリアスを維持
 addCommandAlias("lint", ";scalafmtCheck;test:scalafmtCheck;scalafmtSbtCheck;scalafixAll --check")
