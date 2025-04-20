@@ -1,4 +1,4 @@
-package com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.persistenceEffector;
+package com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.persistenceEffector.oop;
 
 import com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.*;
 import com.github.j5ik2o.pekko.persistence.effector.javadsl.*;

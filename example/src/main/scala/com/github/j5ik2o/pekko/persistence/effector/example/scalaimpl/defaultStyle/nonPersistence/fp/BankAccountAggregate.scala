@@ -2,6 +2,10 @@ package com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.defaultSt
 
 import com.github.j5ik2o.pekko.persistence.effector.example.*
 import com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.*
+import com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.defaultStyle.nonPersistence.{
+  BankAccount,
+  BankAccountAggregateState,
+}
 import com.github.j5ik2o.pekko.persistence.effector.scaladsl.*
 import org.apache.pekko.actor.typed.Behavior
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
