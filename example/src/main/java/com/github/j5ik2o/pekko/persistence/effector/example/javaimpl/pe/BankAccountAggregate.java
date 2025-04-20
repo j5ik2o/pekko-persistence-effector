@@ -50,15 +50,15 @@ public class BankAccountAggregate {
         ctx ->
             PersistenceEffector.fromConfig(
                 config,
-                (initialState, effector) -> {
-                  if (initialState instanceof BankAccountAggregateState.NotCreated notCreated) {
-                    return handleNotCreated(notCreated, effector);
-                  } else if (initialState instanceof BankAccountAggregateState.Created created) {
-                    return handleCreated(created, effector);
-                  } else {
-                    throw new IllegalStateException("Unexpected state: " + initialState);
-                  }
-                }));
+                (initialState, effector) ->
+                    switch (initialState) {
+                      case BankAccountAggregateState.NotCreated notCreated ->
+                          handleNotCreated(notCreated, effector);
+                      case BankAccountAggregateState.Created created ->
+                          handleCreated(created, effector);
+                      default ->
+                          throw new IllegalStateException("Unexpected state: " + initialState);
+                    }));
   }
 
   private static Behavior<BankAccountCommand> handleNotCreated(
@@ -66,24 +66,24 @@ public class BankAccountAggregate {
       PersistenceEffector<BankAccountAggregateState, BankAccountEvent, BankAccountCommand>
           effector) {
     return Behaviors.receiveMessage(
-        command -> {
-          if (command instanceof BankAccountCommand.Create create) {
-            var result = BankAccount.create(create.getAggregateId());
-            return effector.persistEvent(
-                result.getEvent(),
-                newState -> {
-                  create
-                      .replyTo()
-                      .tell(CommandReply.CreateReply.succeeded(create.getAggregateId()));
-                  var created =
-                      new BankAccountAggregateState.Created(
-                          state.getAggregateId(), result.getState());
-                  return handleCreated(created, effector);
-                });
-          } else {
-            throw new IllegalStateException("Unexpected command: " + command);
-          }
-        });
+        command ->
+            switch (command) {
+              case BankAccountCommand.Create create -> {
+                var result = BankAccount.create(create.getAggregateId());
+                yield effector.persistEvent(
+                    result.getEvent(),
+                    newState -> {
+                      create
+                          .replyTo()
+                          .tell(CommandReply.CreateReply.succeeded(create.getAggregateId()));
+                      var created =
+                          new BankAccountAggregateState.Created(
+                              state.getAggregateId(), result.getState());
+                      return handleCreated(created, effector);
+                    });
+              }
+              default -> throw new IllegalStateException("Unexpected command: " + command);
+            });
   }
 
   private static Behavior<BankAccountCommand> handleCreated(
@@ -94,70 +94,74 @@ public class BankAccountAggregate {
         state,
         newState ->
             Behaviors.receiveMessage(
-                command -> {
-                  if (command instanceof BankAccountCommand.Stop stop) {
-                    stop.replyTo().tell(CommandReply.StopReply.succeeded(stop.getAggregateId()));
-                    return Behaviors.stopped();
-                  } else if (command instanceof BankAccountCommand.GetBalance getBalance) {
-                    getBalance
-                        .replyTo()
-                        .tell(
-                            CommandReply.GetBalanceReply.succeeded(
-                                getBalance.getAggregateId(), state.bankAccount().getBalance()));
-                    return Behaviors.same();
-                  } else if (command instanceof BankAccountCommand.DepositCash depositCash) {
-                    var result = state.bankAccount().add(depositCash.amount());
-                    if (result.isLeft()) {
-                      depositCash
-                          .replyTo()
-                          .tell(
-                              CommandReply.DepositCashReply.failed(
-                                  depositCash.getAggregateId(), result.getLeft()));
-                      return Behaviors.same();
-                    } else {
-                      var newBankAccount = result.getRight();
-                      return effector.persistEvent(
-                          newBankAccount.getEvent(),
-                          newState2 -> {
-                            depositCash
-                                .replyTo()
-                                .tell(
-                                    CommandReply.DepositCashReply.succeeded(
-                                        depositCash.getAggregateId(), depositCash.amount()));
-                            var created =
-                                new BankAccountAggregateState.Created(
-                                    state.getAggregateId(), newBankAccount.getState());
-                            return handleCreated(created, effector);
-                          });
-                    }
-                  } else if (command instanceof BankAccountCommand.WithdrawCash withdrawCash) {
-                    var result = state.bankAccount().subtract(withdrawCash.amount());
-                    if (result.isLeft()) {
-                      withdrawCash
-                          .replyTo()
-                          .tell(
-                              CommandReply.WithdrawCashReply.failed(
-                                  withdrawCash.getAggregateId(), result.getLeft()));
-                      return Behaviors.same();
-                    } else {
-                      var newBankAccount = result.getRight();
-                      return effector.persistEvent(
-                          newBankAccount.getEvent(),
-                          newState2 -> {
-                            withdrawCash
-                                .replyTo()
-                                .tell(
-                                    CommandReply.WithdrawCashReply.succeeded(
-                                        withdrawCash.getAggregateId(), withdrawCash.amount()));
-                            var created =
-                                new BankAccountAggregateState.Created(
-                                    state.getAggregateId(), newBankAccount.getState());
-                            return handleCreated(created, effector);
-                          });
-                    }
-                  } else {
-                    throw new IllegalStateException("Unexpected command: " + command);
-                  }
-                }));
+                command ->
+                    switch (command) {
+                      case BankAccountCommand.Stop stop -> {
+                        stop.replyTo()
+                            .tell(CommandReply.StopReply.succeeded(stop.getAggregateId()));
+                        yield Behaviors.stopped();
+                      }
+                      case BankAccountCommand.GetBalance getBalance -> {
+                        getBalance
+                            .replyTo()
+                            .tell(
+                                CommandReply.GetBalanceReply.succeeded(
+                                    getBalance.getAggregateId(), state.bankAccount().getBalance()));
+                        yield Behaviors.same();
+                      }
+                      case BankAccountCommand.DepositCash depositCash -> {
+                        var result = state.bankAccount().add(depositCash.amount());
+                        if (result.isLeft()) {
+                          depositCash
+                              .replyTo()
+                              .tell(
+                                  CommandReply.DepositCashReply.failed(
+                                      depositCash.getAggregateId(), result.getLeft()));
+                          yield Behaviors.same();
+                        } else {
+                          var newBankAccount = result.getRight();
+                          yield effector.persistEvent(
+                              newBankAccount.getEvent(),
+                              newState2 -> {
+                                depositCash
+                                    .replyTo()
+                                    .tell(
+                                        CommandReply.DepositCashReply.succeeded(
+                                            depositCash.getAggregateId(), depositCash.amount()));
+                                var created =
+                                    new BankAccountAggregateState.Created(
+                                        state.getAggregateId(), newBankAccount.getState());
+                                return handleCreated(created, effector);
+                              });
+                        }
+                      }
+                      case BankAccountCommand.WithdrawCash withdrawCash -> {
+                        var result = state.bankAccount().subtract(withdrawCash.amount());
+                        if (result.isLeft()) {
+                          withdrawCash
+                              .replyTo()
+                              .tell(
+                                  CommandReply.WithdrawCashReply.failed(
+                                      withdrawCash.getAggregateId(), result.getLeft()));
+                          yield Behaviors.same();
+                        } else {
+                          var newBankAccount = result.getRight();
+                          yield effector.persistEvent(
+                              newBankAccount.getEvent(),
+                              newState2 -> {
+                                withdrawCash
+                                    .replyTo()
+                                    .tell(
+                                        CommandReply.WithdrawCashReply.succeeded(
+                                            withdrawCash.getAggregateId(), withdrawCash.amount()));
+                                var created =
+                                    new BankAccountAggregateState.Created(
+                                        state.getAggregateId(), newBankAccount.getState());
+                                return handleCreated(created, effector);
+                              });
+                        }
+                      }
+                      default -> throw new IllegalStateException("Unexpected command: " + command);
+                    }));
   }
 }
