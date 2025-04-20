@@ -348,7 +348,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.j5ik2o:pekko-persistence-effector_3:<latest_version>' // Or _2.13
+    implementation 'com.github.j5ik2o:pekko-persistence-effector_3:<latest_version>'
 }
 ```
 
@@ -366,7 +366,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.j5ik2o:pekko-persistence-effector_3:<latest_version>") // Or _2.13
+    implementation("com.github.j5ik2o:pekko-persistence-effector_3:<latest_version>")
 }
 ```
 
@@ -388,7 +388,7 @@ Add the following to your `pom.xml`:
 <dependencies>
   <dependency>
     <groupId>com.github.j5ik2o</groupId>
-    <artifactId>pekko-persistence-effector_3</artifactId> <!-- Or _2.13 -->
+    <artifactId>pekko-persistence-effector_3</artifactId>
     <version>LATEST</version> <!-- Replace with specific version -->
   </dependency>
 </dependencies>
