@@ -340,10 +340,6 @@ Add the following to your `build.gradle`:
 repositories {
     maven {
         url = uri("https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector")
-        credentials {
-            username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
-            password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
-        }
     }
 }
 
@@ -358,10 +354,6 @@ For Kotlin DSL (`build.gradle.kts`):
 repositories {
     maven {
         url = uri("https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector")
-        credentials {
-            username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
-            password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
-        }
     }
 }
 
