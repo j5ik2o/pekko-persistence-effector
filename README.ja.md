@@ -340,15 +340,11 @@ libraryDependencies ++= Seq(
 repositories {
     maven {
         url = uri("https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector")
-        credentials {
-            username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
-            password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
-        }
     }
 }
 
 dependencies {
-    implementation 'com.github.j5ik2o:pekko-persistence-effector_3:<最新バージョン>' // または _2.13
+    implementation 'com.github.j5ik2o:pekko-persistence-effector_3:<最新バージョン>'
 }
 ```
 
@@ -358,15 +354,11 @@ Kotlin DSL (`build.gradle.kts`) の場合：
 repositories {
     maven {
         url = uri("https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector")
-        credentials {
-            username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
-            password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
-        }
     }
 }
 
 dependencies {
-    implementation("com.github.j5ik2o:pekko-persistence-effector_3:<最新バージョン>") // または _2.13
+    implementation("com.github.j5ik2o:pekko-persistence-effector_3:<最新バージョン>")
 }
 ```
 
@@ -388,7 +380,7 @@ Maven (`pom.xml`) の場合：
 <dependencies>
   <dependency>
     <groupId>com.github.j5ik2o</groupId>
-    <artifactId>pekko-persistence-effector_3</artifactId> <!-- または _2.13 -->
+    <artifactId>pekko-persistence-effector_3</artifactId>
     <version>LATEST</version> <!-- 特定のバージョンに置き換えてください -->
   </dependency>
 </dependencies>
