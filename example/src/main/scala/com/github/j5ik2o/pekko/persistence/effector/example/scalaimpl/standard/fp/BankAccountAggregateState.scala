@@ -1,9 +1,6 @@
-package com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.standard
+package com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.standard.fp
 
-import com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.{
-  BankAccountEvent,
-  BankAccountId,
-}
+import com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.{BankAccountEvent, BankAccountId}
 
 enum BankAccountAggregateState {
   def aggregateId: BankAccountId

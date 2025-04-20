@@ -1,16 +1,6 @@
-package com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.standard
+package com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.standard.fp
 
-import com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.{
-  BankAccountCommand,
-  BankAccountError,
-  BankAccountEvent,
-  BankAccountId,
-  CreateReply,
-  DepositCashReply,
-  GetBalanceReply,
-  StopReply,
-  WithdrawCashReply,
-}
+import com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.*
 import org.apache.pekko.actor.typed.Behavior
 import org.apache.pekko.persistence.typed.PersistenceId
 import org.apache.pekko.persistence.typed.scaladsl.{
