@@ -105,7 +105,7 @@ abstract class BankAccountAggregateTestBase
 
       val bankAccountActor = spawn(createBankAccountAggregate(accountId))
 
-      // Create account
+      // Create an account
       val createProbe = createTestProbe[CreateReply]()
       bankAccountActor ! BankAccountCommand.Create(accountId, createProbe.ref)
       createProbe.expectMessageType[CreateReply]
@@ -141,12 +141,12 @@ abstract class BankAccountAggregateTestBase
 
       val bankAccountActor = spawn(createBankAccountAggregate(accountId))
 
-      // Create account
+      // Create an account
       val createProbe = createTestProbe[CreateReply]()
       bankAccountActor ! BankAccountCommand.Create(accountId, createProbe.ref)
       createProbe.expectMessageType[CreateReply]
 
-      // Check initial balance
+      // Check the initial balance
       val initialBalanceProbe = createTestProbe[GetBalanceReply]()
       bankAccountActor ! BankAccountCommand.GetBalance(accountId, initialBalanceProbe.ref)
 
@@ -159,12 +159,12 @@ abstract class BankAccountAggregateTestBase
 
       val bankAccountActor = spawn(createBankAccountAggregate(accountId))
 
-      // Create account
+      // Create an account
       val createProbe = createTestProbe[CreateReply]()
       bankAccountActor ! BankAccountCommand.Create(accountId, createProbe.ref)
       createProbe.expectMessageType[CreateReply]
 
-      // Attempt to withdraw more than deposit amount
+      // Attempt to withdraw more than the deposit amount
       val withdrawAmount = Money.of(JavaBigDecimal.valueOf(1000), Money.JPY)
       val withdrawProbe = createTestProbe[WithdrawCashReply]()
       bankAccountActor ! BankAccountCommand.WithdrawCash(
@@ -182,7 +182,7 @@ abstract class BankAccountAggregateTestBase
 
       val bankAccountActor = spawn(createBankAccountAggregate(accountId))
 
-      // Create account
+      // Create an account
       val createProbe = createTestProbe[CreateReply]()
       bankAccountActor ! BankAccountCommand.Create(accountId, createProbe.ref)
       createProbe.expectMessageType[CreateReply]
@@ -204,7 +204,7 @@ abstract class BankAccountAggregateTestBase
       // Create the first actor and build state
       val bankAccountActor1 = spawn(createBankAccountAggregate(accountId))
 
-      // Create account
+      // Create an account
       val createProbe = createTestProbe[CreateReply]()
       bankAccountActor1 ! BankAccountCommand.Create(accountId, createProbe.ref)
       createProbe.expectMessageType[CreateReply]
@@ -268,7 +268,7 @@ abstract class BankAccountAggregateTestBase
       // Create the first actor and build state
       val bankAccountActor1 = spawn(createBankAccountAggregate(accountId))
 
-      // Create account
+      // Create an account
       val createProbe = createTestProbe[CreateReply]()
       bankAccountActor1 ! BankAccountCommand.Create(accountId, createProbe.ref)
       createProbe.expectMessageType[CreateReply]
@@ -298,7 +298,7 @@ abstract class BankAccountAggregateTestBase
     "restore initial state after stop and restart" in {
       val accountId = BankAccountId(UUID.randomUUID())
 
-      // Create the first actor and build initial state
+      // Create the first actor and build the initial state
       val bankAccountActor1 = spawn(createBankAccountAggregate(accountId))
 
       // Create account
