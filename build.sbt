@@ -1,5 +1,4 @@
 import Dependencies.*
-import kotlin.Keys.{kotlinVersion, kotlincJvmTarget}
 
 ThisBuild / organization := "com.github.j5ik2o"
 ThisBuild / organizationName := "com.github.j5ik2o"
@@ -112,14 +111,11 @@ lazy val library = (project in file("library"))
 
 // サンプルプロジェクト（publishなし）
 lazy val example = (project in file("example"))
-  .enablePlugins(KotlinPlugin) // Kotlinプラグインを有効化
   .settings(baseSettings)
   .settings(testSettings)
   .settings(
     name := "pekko-persistence-effector-example",
     publish / skip := true,
-    kotlinVersion := "1.8.0",
-    kotlincJvmTarget := "17",
     libraryDependencies ++= Seq(
       logback.classic,
       apachePekko.slf4j,

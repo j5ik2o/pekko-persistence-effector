@@ -387,13 +387,13 @@ object Money {
 
   // implicit def bigDecimalToMoney(amount: Int) = apply(amount)
 
-  val USD: Currency = Currency.getInstance("USD")
+  final val USD: Currency = Currency.getInstance("USD")
 
-  val EUR: Currency = Currency.getInstance("EUR")
+  final val EUR: Currency = Currency.getInstance("EUR")
 
-  val JPY: Currency = Currency.getInstance("JPY")
+  final val JPY: Currency = Currency.getInstance("JPY")
 
-  val DefaultRoundingMode: BigDecimal.RoundingMode.Value =
+  final val DefaultRoundingMode: BigDecimal.RoundingMode.Value =
     BigDecimal.RoundingMode.HALF_EVEN
 
   def apply(amount: BigDecimal, currency: Currency): Money =
