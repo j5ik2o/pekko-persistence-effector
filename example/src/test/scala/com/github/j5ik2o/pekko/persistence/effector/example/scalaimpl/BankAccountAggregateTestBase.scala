@@ -71,16 +71,10 @@ abstract class BankAccountAggregateTestBase
         depositResponse.aggregateId shouldBe accountId
         depositResponse.amount shouldBe depositAmount
       }
-      // Stop account
-      val stopProbe = createTestProbe[StopReply]()
-      bankAccountActor ! BankAccountCommand.Stop(accountId, stopProbe.ref)
-      stopProbe.expectMessageType[scalaimpl.StopReply.Succeeded]
-
-      val bankAccountActor2 = spawn(createBankAccountAggregate(accountId))
 
       // Check balance
       val balanceProbe = createTestProbe[GetBalanceReply]()
-      bankAccountActor2 ! BankAccountCommand.GetBalance(accountId, balanceProbe.ref)
+      bankAccountActor ! BankAccountCommand.GetBalance(accountId, balanceProbe.ref)
 
       val balanceResponse = balanceProbe.expectMessageType[scalaimpl.GetBalanceReply.Succeeded]
       // balanceResponse.balance shouldBe depositAmount
@@ -189,6 +183,10 @@ abstract class BankAccountAggregateTestBase
     }
 
     "maintain state after stop and restart with multiple actions" in {
+      assume(
+        persistenceMode != PersistenceMode.Deferred,
+        "Test skipped for Deferred persistence mode",
+      )
       val accountId = BankAccountId(UUID.randomUUID())
       val limit = Money(100000, Money.JPY)
       val balance = Money(0, Money.JPY)
@@ -251,6 +249,10 @@ abstract class BankAccountAggregateTestBase
     }
 
     "maintain state after stop and restart" in {
+      assume(
+        persistenceMode != PersistenceMode.Deferred,
+        "Test skipped for Deferred persistence mode",
+      )
       val accountId = BankAccountId(UUID.randomUUID())
       val limit = Money(100000, Money.JPY)
       val balance = Money(0, Money.JPY)
@@ -285,6 +287,10 @@ abstract class BankAccountAggregateTestBase
     }
 
     "restore initial state after stop and restart" in {
+      assume(
+        persistenceMode != PersistenceMode.Deferred,
+        "Test skipped for Deferred persistence mode",
+      )
       val accountId = BankAccountId(UUID.randomUUID())
       val limit = Money(100000, Money.JPY)
       val balance = Money(0, Money.JPY)

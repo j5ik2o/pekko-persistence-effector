@@ -1,4 +1,4 @@
-package com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.standard;
+package com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.defaultStyle.nonPersistence.oop;
 
 import com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.BankAccountId;
 import java.io.Serializable;

@@ -1,4 +1,4 @@
-package com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.persistenceEffector
+package com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.persistenceEffector.oop
 
 import com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.{
   BankAccountAggregateTestBase,
@@ -18,7 +18,7 @@ class BankAccountAggregateSpec extends BankAccountAggregateTestBase {
   override def createBankAccountAggregate(accountId: BankAccountId): Behavior[BankAccountCommand] =
     BankAccountAggregate(accountId, persistenceMode)
 
-  // Ensure LevelDB storage directory is created before testing
+  // Ensure the LevelDB storage directory is created before testing
   override def beforeAll(): Unit = {
     val journalDir = new File("target/journal")
     val snapshotDir = new File("target/snapshot")

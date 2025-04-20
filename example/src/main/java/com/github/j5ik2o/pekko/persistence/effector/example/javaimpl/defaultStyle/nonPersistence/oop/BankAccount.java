@@ -1,6 +1,9 @@
-package com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.standard;
+package com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.defaultStyle.nonPersistence.oop;
 
-import com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.*;
+import com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.BankAccountError;
+import com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.BankAccountId;
+import com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.Either;
+import com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.Money;
 import java.io.Serializable;
 
 /** Class representing a bank account */

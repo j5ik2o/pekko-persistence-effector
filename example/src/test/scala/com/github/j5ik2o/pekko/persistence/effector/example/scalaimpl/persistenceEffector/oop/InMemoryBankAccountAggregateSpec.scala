@@ -1,4 +1,4 @@
-package com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.persistenceEffector
+package com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.persistenceEffector.oop
 
 import com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.{
   BankAccountAggregateTestBase,

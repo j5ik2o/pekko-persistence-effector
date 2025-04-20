@@ -1,7 +1,11 @@
-package com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.persistenceEffector
+package com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.persistenceEffector.fp
 
 import com.github.j5ik2o.pekko.persistence.effector.example.*
 import com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.*
+import com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.persistenceEffector.{
+  BankAccount,
+  BankAccountAggregateState,
+}
 import com.github.j5ik2o.pekko.persistence.effector.scaladsl.*
 import org.apache.pekko.actor.typed.Behavior
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
