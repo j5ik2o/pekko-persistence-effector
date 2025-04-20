@@ -1,8 +1,8 @@
 package com.github.j5ik2o.pekko.persistence.effector.scaladsl
 
 /**
- * Trait defining the message protocol for communication between components. This trait provides a
- * way to convert between domain events/states and messages.
+ * Trait defining the message protocol for communication between components. This trait provides a way to convert
+ * between domain events/states and messages.
  *
  * @tparam S
  *   Type of state

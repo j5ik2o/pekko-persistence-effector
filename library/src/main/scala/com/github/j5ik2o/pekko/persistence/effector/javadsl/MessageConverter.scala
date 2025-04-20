@@ -100,8 +100,8 @@ trait MessageConverter[S, E, M] {
    * @param message
    *   Message to extract from
    * @return
-   *   Option containing the maximum sequence number, or None if the message doesn't contain deleted
-   *   snapshots information
+   *   Option containing the maximum sequence number, or None if the message doesn't contain deleted snapshots
+   *   information
    */
   def unwrapDeleteSnapshots(message: M): Option[java.lang.Long] = message.asMatchable match {
     case msg: DeletedSnapshots[M] @unchecked => Some(msg.maxSequenceNumber)
@@ -117,55 +117,51 @@ trait MessageConverter[S, E, M] {
   def toScala: com.github.j5ik2o.pekko.persistence.effector.scaladsl.MessageConverter[S, E, M] = {
     val self = this
     new com.github.j5ik2o.pekko.persistence.effector.scaladsl.MessageConverter[S, E, M] {
-      override def wrapPersistedEvents(events: Seq[E]): M &
-        com.github.j5ik2o.pekko.persistence.effector.scaladsl.PersistedEvent[E, M] = {
+      override def wrapPersistedEvents(
+        events: Seq[E]): M & com.github.j5ik2o.pekko.persistence.effector.scaladsl.PersistedEvent[E, M] = {
         val javaEvents = events.asJava
         val result = self.wrapPersistedEvents(javaEvents)
         // Create adapter to convert JavaDSL version of PersistedEvent to ScalaDSL version
         val adapter = new MessageWrapperAdapter.JavaPersistedEventAdapter[E, M](result)
         // Return the original message combined with the adapter
-        result.asInstanceOf[M &
-          com.github.j5ik2o.pekko.persistence.effector.scaladsl.PersistedEvent[E, M]]
+        result.asInstanceOf[M & com.github.j5ik2o.pekko.persistence.effector.scaladsl.PersistedEvent[E, M]]
       }
 
       override def unwrapPersistedEvents(message: M): Option[Seq[E]] =
         self.unwrapPersistedEvents(message).map(_.asScala.toSeq)
 
-      override def wrapPersistedSnapshot(state: S): M &
-        com.github.j5ik2o.pekko.persistence.effector.scaladsl.PersistedState[S, M] = {
+      override def wrapPersistedSnapshot(
+        state: S): M & com.github.j5ik2o.pekko.persistence.effector.scaladsl.PersistedState[S, M] = {
         val result = self.wrapPersistedSnapshot(state)
         // Create adapter to convert the JavaDSL version of PersistedState to the ScalaDSL version
         val adapter = new MessageWrapperAdapter.JavaPersistedStateAdapter[S, M](result)
         // Return the original message combined with the adapter
-        result.asInstanceOf[M &
-          com.github.j5ik2o.pekko.persistence.effector.scaladsl.PersistedState[S, M]]
+        result.asInstanceOf[M & com.github.j5ik2o.pekko.persistence.effector.scaladsl.PersistedState[S, M]]
       }
 
       override def unwrapPersistedSnapshot(message: M): Option[S] =
         self.unwrapPersistedSnapshot(message)
 
-      override def wrapRecoveredState(state: S): M &
-        com.github.j5ik2o.pekko.persistence.effector.scaladsl.RecoveredState[S, M] = {
+      override def wrapRecoveredState(
+        state: S): M & com.github.j5ik2o.pekko.persistence.effector.scaladsl.RecoveredState[S, M] = {
         val result = self.wrapRecoveredState(state)
         // Create adapter to convert the JavaDSL version of RecoveredState to the ScalaDSL version
         val adapter = new MessageWrapperAdapter.JavaRecoveredStateAdapter[S, M](result)
         // Return the original message combined with the adapter
-        result.asInstanceOf[M &
-          com.github.j5ik2o.pekko.persistence.effector.scaladsl.RecoveredState[S, M]]
+        result.asInstanceOf[M & com.github.j5ik2o.pekko.persistence.effector.scaladsl.RecoveredState[S, M]]
       }
 
       override def unwrapRecoveredState(message: M): Option[S] =
         self.unwrapRecoveredState(message)
 
-      override def wrapDeleteSnapshots(maxSequenceNumber: Long): M &
-        com.github.j5ik2o.pekko.persistence.effector.scaladsl.DeletedSnapshots[M] = {
+      override def wrapDeleteSnapshots(
+        maxSequenceNumber: Long): M & com.github.j5ik2o.pekko.persistence.effector.scaladsl.DeletedSnapshots[M] = {
         val javaLong = maxSequenceNumber.asInstanceOf[java.lang.Long]
         val result = self.wrapDeleteSnapshots(javaLong)
         // Create adapter to convert the JavaDSL version of DeletedSnapshots to the ScalaDSL version
         val adapter = new MessageWrapperAdapter.JavaDeletedSnapshotsAdapter[M](result)
         // Return the original message combined with the adapter
-        result.asInstanceOf[M &
-          com.github.j5ik2o.pekko.persistence.effector.scaladsl.DeletedSnapshots[M]]
+        result.asInstanceOf[M & com.github.j5ik2o.pekko.persistence.effector.scaladsl.DeletedSnapshots[M]]
       }
 
       override def unwrapDeleteSnapshots(message: M): Option[Long] =
@@ -175,8 +171,7 @@ trait MessageConverter[S, E, M] {
 }
 
 /**
- * Companion object for MessageConverter. Provides factory methods to create MessageConverter
- * instances.
+ * Companion object for MessageConverter. Provides factory methods to create MessageConverter instances.
  */
 object MessageConverter {
   private final case class Default[S, E, M <: Matchable](
@@ -188,8 +183,7 @@ object MessageConverter {
     override def wrapPersistedEvents(events: java.util.List[E]): M & PersistedEvent[E, M] =
       _wrapPersistedEvents(events)
 
-    override def wrapPersistedSnapshot(state: S): M & PersistedState[S, M] = _wrapPersistedState(
-      state)
+    override def wrapPersistedSnapshot(state: S): M & PersistedState[S, M] = _wrapPersistedState(state)
 
     override def wrapRecoveredState(state: S): M & RecoveredState[S, M] = _wrapRecoveredState(state)
 
@@ -226,15 +220,13 @@ object MessageConverter {
     Default(wrapPersistedEvents, wrapPersistedState, wrapRecoveredState, wrapDeleteSnapshots)
 
   // Standard message wrapper class (consider moving to an internal package)
-  private[effector] class StandardJavaPersistedEvent[E](val events: java.util.List[E])
-    extends PersistedEvent[E, Any]
+  private[effector] class StandardJavaPersistedEvent[E](val events: java.util.List[E]) extends PersistedEvent[E, Any]
 
   private[effector] class StandardJavaPersistedState[S](val state: S) extends PersistedState[S, Any]
 
   private[effector] class StandardJavaRecoveredState[S](val state: S) extends RecoveredState[S, Any]
 
-  private[effector] class StandardJavaDeletedSnapshots(val maxSequenceNumber: Long)
-    extends DeletedSnapshots[Any]
+  private[effector] class StandardJavaDeletedSnapshots(val maxSequenceNumber: Long) extends DeletedSnapshots[Any]
 
   /**
    * Create a default MessageConverter with standard implementations.

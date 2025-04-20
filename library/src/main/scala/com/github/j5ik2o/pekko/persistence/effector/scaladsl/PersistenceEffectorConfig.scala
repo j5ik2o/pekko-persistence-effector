@@ -1,8 +1,8 @@
 package com.github.j5ik2o.pekko.persistence.effector.scaladsl
 
 /**
- * Configuration for PersistenceEffector in Scala API. This trait defines all the settings needed to
- * create and configure a PersistenceEffector.
+ * Configuration for PersistenceEffector in Scala API. This trait defines all the settings needed to create and
+ * configure a PersistenceEffector.
  *
  * @tparam S
  *   Type of state
@@ -14,8 +14,7 @@ package com.github.j5ik2o.pekko.persistence.effector.scaladsl
 trait PersistenceEffectorConfig[S, E, M] {
 
   /**
-   * Get the persistence ID for this effector. This ID is used to uniquely identify the persistence
-   * stream.
+   * Get the persistence ID for this effector. This ID is used to uniquely identify the persistence stream.
    *
    * @return
    *   Persistence ID string
@@ -31,8 +30,7 @@ trait PersistenceEffectorConfig[S, E, M] {
   def initialState: S
 
   /**
-   * Get the function to apply events to state. This function is used to evolve the state when
-   * events are applied.
+   * Get the function to apply events to state. This function is used to evolve the state when events are applied.
    *
    * @return
    *   Function that takes a state and an event and returns a new state
@@ -48,8 +46,7 @@ trait PersistenceEffectorConfig[S, E, M] {
   def persistenceMode: PersistenceMode
 
   /**
-   * Get the stash size for the effector. Determines how many messages can be stashed during
-   * recovery.
+   * Get the stash size for the effector. Determines how many messages can be stashed during recovery.
    *
    * @return
    *   Maximum stash size
@@ -214,8 +211,7 @@ trait PersistenceEffectorConfig[S, E, M] {
 }
 
 /**
- * Companion object for PersistenceEffectorConfig. Provides factory methods to create
- * configurations.
+ * Companion object for PersistenceEffectorConfig. Provides factory methods to create configurations.
  */
 object PersistenceEffectorConfig {
   private final case class Impl[S, E, M](
@@ -244,19 +240,16 @@ object PersistenceEffectorConfig {
     override def withStashSize(value: Int): PersistenceEffectorConfig[S, E, M] =
       copy(stashSize = value)
 
-    override def withSnapshotCriteria(
-      value: SnapshotCriteria[S, E]): PersistenceEffectorConfig[S, E, M] =
+    override def withSnapshotCriteria(value: SnapshotCriteria[S, E]): PersistenceEffectorConfig[S, E, M] =
       copy(snapshotCriteria = Some(value))
 
-    override def withRetentionCriteria(
-      value: RetentionCriteria): PersistenceEffectorConfig[S, E, M] =
+    override def withRetentionCriteria(value: RetentionCriteria): PersistenceEffectorConfig[S, E, M] =
       copy(retentionCriteria = Some(value))
 
     override def withBackoffConfig(value: BackoffConfig): PersistenceEffectorConfig[S, E, M] =
       copy(backoffConfig = Some(value))
 
-    override def withMessageConverter(
-      value: MessageConverter[S, E, M]): PersistenceEffectorConfig[S, E, M] =
+    override def withMessageConverter(value: MessageConverter[S, E, M]): PersistenceEffectorConfig[S, E, M] =
       copy(messageConverter = value)
   }
 
@@ -285,8 +278,7 @@ object PersistenceEffectorConfig {
       ))
 
   /**
-   * Create a PersistenceEffectorConfig with specified parameters. Provides default values for
-   * optional parameters.
+   * Create a PersistenceEffectorConfig with specified parameters. Provides default values for optional parameters.
    *
    * @param persistenceId
    *   Persistence ID for the effector

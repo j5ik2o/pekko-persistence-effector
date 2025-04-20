@@ -3,8 +3,8 @@ package com.github.j5ik2o.pekko.persistence.effector.internal.scalaimpl
 import org.apache.pekko.actor.typed.ActorRef
 
 /**
- * Protocol for persistence store operations. This object defines the messages used for
- * communication between the persistence effector and the persistence store.
+ * Protocol for persistence store operations. This object defines the messages used for communication between the
+ * persistence effector and the persistence store.
  */
 private[effector] object PersistenceStoreProtocol {
 
@@ -30,9 +30,7 @@ private[effector] object PersistenceStoreProtocol {
    * @tparam E
    *   Type of event
    */
-  final case class PersistSingleEvent[S, E](
-    event: E,
-    replyTo: ActorRef[PersistSingleEventSucceeded[S, E]])
+  final case class PersistSingleEvent[S, E](event: E, replyTo: ActorRef[PersistSingleEventSucceeded[S, E]])
     extends PersistenceCommand[S, E]
 
   /**
@@ -116,8 +114,7 @@ private[effector] object PersistenceStoreProtocol {
    * @tparam E
    *   Type of event
    */
-  final case class PersistMultipleEventsSucceeded[S, E](events: Seq[E])
-    extends PersistenceReply[S, E]
+  final case class PersistMultipleEventsSucceeded[S, E](events: Seq[E]) extends PersistenceReply[S, E]
 
   /**
    * Base trait for snapshot persistence replies.
@@ -153,8 +150,7 @@ private[effector] object PersistenceStoreProtocol {
    * @tparam E
    *   Type of event
    */
-  final case class PersistSnapshotFailed[S, E](snapshot: S, cause: Throwable)
-    extends PersistSnapshotReply[S, E]
+  final case class PersistSnapshotFailed[S, E](snapshot: S, cause: Throwable) extends PersistSnapshotReply[S, E]
 
   /**
    * Base trait for snapshot deletion replies.
@@ -176,8 +172,7 @@ private[effector] object PersistenceStoreProtocol {
    * @tparam E
    *   Type of event
    */
-  final case class DeleteSnapshotsSucceeded[S, E](maxSequenceNumber: Long)
-    extends DeleteSnapshotsReply[S, E]
+  final case class DeleteSnapshotsSucceeded[S, E](maxSequenceNumber: Long) extends DeleteSnapshotsReply[S, E]
 
   /**
    * Reply for failed deletion of snapshots.

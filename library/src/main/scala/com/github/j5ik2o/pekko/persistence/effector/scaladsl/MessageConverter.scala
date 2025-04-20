@@ -100,8 +100,8 @@ trait MessageConverter[S, E, M] {
    * @param message
    *   Message to extract from
    * @return
-   *   Option containing the maximum sequence number, or None if the message doesn't contain deleted
-   *   snapshots information
+   *   Option containing the maximum sequence number, or None if the message doesn't contain deleted snapshots
+   *   information
    */
   def unwrapDeleteSnapshots(message: M): Option[Long] = message.asMatchable match {
     case msg: DeletedSnapshots[M] @unchecked => Some(msg.maxSequenceNumber)
@@ -119,8 +119,7 @@ object MessageConverter {
   ) extends MessageConverter[S, E, M] {
     override def wrapPersistedEvents(events: Seq[E]): M & PersistedEvent[E, M] =
       _wrapPersistedEvents(events)
-    override def wrapPersistedSnapshot(state: S): M & PersistedState[S, M] = _wrapPersistedState(
-      state)
+    override def wrapPersistedSnapshot(state: S): M & PersistedState[S, M] = _wrapPersistedState(state)
     override def wrapRecoveredState(state: S): M & RecoveredState[S, M] = _wrapRecoveredState(state)
     override def wrapDeleteSnapshots(maxSequenceNumber: Long): M & DeletedSnapshots[M] =
       _wrapDeleteSnapshots(maxSequenceNumber)
@@ -154,15 +153,13 @@ object MessageConverter {
   ): MessageConverter[S, E, M] =
     Default(wrapPersistedEvents, wrapPersistedState, wrapRecoveredState, wrapDeleteSnapshots)
 
-  private[effector] case class StandardPersistedEvent[E](events: Seq[E])
-    extends PersistedEvent[E, Any]
+  private[effector] case class StandardPersistedEvent[E](events: Seq[E]) extends PersistedEvent[E, Any]
 
   private[effector] case class StandardPersistedState[S](state: S) extends PersistedState[S, Any]
 
   private[effector] case class StandardRecoveredState[S](state: S) extends RecoveredState[S, Any]
 
-  private[effector] case class StandardDeletedSnapshots(maxSequenceNumber: Long)
-    extends DeletedSnapshots[Any]
+  private[effector] case class StandardDeletedSnapshots(maxSequenceNumber: Long) extends DeletedSnapshots[Any]
 
   /**
    * Create a default MessageConverter with standard implementations.

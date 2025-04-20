@@ -73,39 +73,38 @@ class SnapshotCriteriaIntegrationSpec extends PersistenceEffectorTestBase {
 
       // Start actor
       val behavior = spawn(Behaviors.setup[TestMessage] { context =>
-        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) {
-          case (state, effector) =>
-            // Function to persist events in sequence
-            def persistNextEvent(
-              remainingEvents: Seq[TestEvent],
-              currentState: TestState,
-            ): Behavior[TestMessage] =
-              if (remainingEvents.isEmpty) {
-                // Log state after event processing
-                context.log.debug("All events processed. Final state: {}", currentState)
+        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) { case (state, effector) =>
+          // Function to persist events in sequence
+          def persistNextEvent(
+            remainingEvents: Seq[TestEvent],
+            currentState: TestState,
+          ): Behavior[TestMessage] =
+            if (remainingEvents.isEmpty) {
+              // Log state after event processing
+              context.log.debug("All events processed. Final state: {}", currentState)
 
-                // Explicitly add test snapshot (for actor state verification)
-                testContext.snapshots += TestMessage.SnapshotPersisted(currentState)
+              // Explicitly add test snapshot (for actor state verification)
+              testContext.snapshots += TestMessage.SnapshotPersisted(currentState)
 
-                // The next behavior could be Behaviors.same, but in case a message comes
-                Behaviors.receiveMessage(_ => Behaviors.same)
-              } else {
-                val event = remainingEvents.head
-                val nextEvents = remainingEvents.tail
+              // The next behavior could be Behaviors.same, but in case a message comes
+              Behaviors.receiveMessage(_ => Behaviors.same)
+            } else {
+              val event = remainingEvents.head
+              val nextEvents = remainingEvents.tail
 
-                // Persist event
-                context.log.debug("Persisting event: {}, currentState: {}", event, currentState)
-                effector.persistEventWithSnapshot(event, currentState) { e =>
-                  testContext.events += TestMessage.EventPersisted(Seq(e))
-                  val newState = currentState.applyEvent(e)
-                  context.log.debug("Event persisted, checking for snapshots...")
-                  Thread.sleep(100) // Wait for snapshot processing
-                  persistNextEvent(nextEvents, newState)
-                }
+              // Persist event
+              context.log.debug("Persisting event: {}, currentState: {}", event, currentState)
+              effector.persistEventWithSnapshot(event, currentState) { e =>
+                testContext.events += TestMessage.EventPersisted(Seq(e))
+                val newState = currentState.applyEvent(e)
+                context.log.debug("Event persisted, checking for snapshots...")
+                Thread.sleep(100) // Wait for snapshot processing
+                persistNextEvent(nextEvents, newState)
               }
+            }
 
-            // Start persisting from the first event
-            persistNextEvent(events, state)
+          // Start persisting from the first event
+          persistNextEvent(events, state)
         }(using context)
       })
 
@@ -153,44 +152,43 @@ class SnapshotCriteriaIntegrationSpec extends PersistenceEffectorTestBase {
 
       // First actor execution
       val behavior1 = spawn(Behaviors.setup[TestMessage] { context =>
-        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) {
-          case (state, effector) =>
-            // Function to persist events in sequence
-            def persistNextEvent(
-              remainingEvents: Seq[TestEvent],
-              currentState: TestState,
-            ): Behavior[TestMessage] =
-              if (remainingEvents.isEmpty) {
-                // Log state after event processing
-                context.log.debug("All events processed. Final state: {}", currentState)
+        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) { case (state, effector) =>
+          // Function to persist events in sequence
+          def persistNextEvent(
+            remainingEvents: Seq[TestEvent],
+            currentState: TestState,
+          ): Behavior[TestMessage] =
+            if (remainingEvents.isEmpty) {
+              // Log state after event processing
+              context.log.debug("All events processed. Final state: {}", currentState)
 
-                // Explicitly add test snapshot (for actor state verification)
-                testContext.snapshots += TestMessage.SnapshotPersisted(currentState)
+              // Explicitly add test snapshot (for actor state verification)
+              testContext.snapshots += TestMessage.SnapshotPersisted(currentState)
 
-                // The next behavior could be Behaviors.same, but in case a message comes
-                Behaviors.receiveMessage(_ => Behaviors.same)
-              } else {
-                val event = remainingEvents.head
-                val nextEvents = remainingEvents.tail
+              // The next behavior could be Behaviors.same, but in case a message comes
+              Behaviors.receiveMessage(_ => Behaviors.same)
+            } else {
+              val event = remainingEvents.head
+              val nextEvents = remainingEvents.tail
 
-                // Persist event with snapshot
-                effector.persistEventWithSnapshot(event, currentState) { e =>
-                  testContext.events += TestMessage.EventPersisted(Seq(e))
-                  val newState = currentState.applyEvent(e)
+              // Persist event with snapshot
+              effector.persistEventWithSnapshot(event, currentState) { e =>
+                testContext.events += TestMessage.EventPersisted(Seq(e))
+                val newState = currentState.applyEvent(e)
 
-                  // Check if it meets snapshot criteria
-                  val seqNum = testContext.events.size
-                  if (seqNum % 2 == 0) {
-                    // Explicitly add snapshot for testing
-                    testContext.snapshots += TestMessage.SnapshotPersisted(newState)
-                  }
-
-                  persistNextEvent(nextEvents, newState)
+                // Check if it meets snapshot criteria
+                val seqNum = testContext.events.size
+                if (seqNum % 2 == 0) {
+                  // Explicitly add snapshot for testing
+                  testContext.snapshots += TestMessage.SnapshotPersisted(newState)
                 }
-              }
 
-            // Start persisting from the first event
-            persistNextEvent(events, state)
+                persistNextEvent(nextEvents, newState)
+              }
+            }
+
+          // Start persisting from the first event
+          persistNextEvent(events, state)
         }(using context)
       })
 
@@ -211,11 +209,10 @@ class SnapshotCriteriaIntegrationSpec extends PersistenceEffectorTestBase {
 
       // Start the second actor
       val behavior2 = spawn(Behaviors.setup[TestMessage] { context =>
-        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) {
-          case (state, effector) =>
-            // Record recovered state
-            recoveredState += state
-            Behaviors.receiveMessage(_ => Behaviors.same)
+        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) { case (state, effector) =>
+          // Record recovered state
+          recoveredState += state
+          Behaviors.receiveMessage(_ => Behaviors.same)
         }(using context)
       })
 

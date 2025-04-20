@@ -16,18 +16,14 @@ final case class BankAccount(
       Left(BankAccountError.LimitOverError)
     else
       Right(
-        Result(
-          copy(balance = balance + amount),
-          BankAccountEvent.CashDeposited(bankAccountId, amount, Instant.now())))
+        Result(copy(balance = balance + amount), BankAccountEvent.CashDeposited(bankAccountId, amount, Instant.now())))
 
   def subtract(amount: Money): Either[BankAccountError, Result[BankAccount, BankAccountEvent]] =
     if (Money(0, Money.JPY) > (balance - amount))
       Left(BankAccountError.InsufficientFundsError)
     else
       Right(
-        Result(
-          copy(balance = balance - amount),
-          BankAccountEvent.CashWithdrew(bankAccountId, amount, Instant.now())))
+        Result(copy(balance = balance - amount), BankAccountEvent.CashWithdrew(bankAccountId, amount, Instant.now())))
 
 }
 

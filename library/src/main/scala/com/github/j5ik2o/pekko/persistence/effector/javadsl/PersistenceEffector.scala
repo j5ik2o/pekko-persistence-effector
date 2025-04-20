@@ -43,9 +43,7 @@ trait PersistenceEffector[S, E, M] {
    * @return
    *   new behavior
    */
-  def persistEvents(
-    events: util.List[E],
-    onPersisted: Function[util.List[E], Behavior[M]]): Behavior[M]
+  def persistEvents(events: util.List[E], onPersisted: Function[util.List[E], Behavior[M]]): Behavior[M]
 
   /**
    * Persist a snapshot.
@@ -72,10 +70,7 @@ trait PersistenceEffector[S, E, M] {
    * @return
    *   new behavior
    */
-  def persistSnapshot(
-    snapshot: S,
-    force: Boolean,
-    onPersisted: Function[S, Behavior[M]]): Behavior[M]
+  def persistSnapshot(snapshot: S, force: Boolean, onPersisted: Function[S, Behavior[M]]): Behavior[M]
 
   /**
    * Persist event with snapshot.
@@ -89,10 +84,7 @@ trait PersistenceEffector[S, E, M] {
    * @return
    *   new behavior
    */
-  def persistEventWithSnapshot(
-    event: E,
-    snapshot: S,
-    onPersisted: Function[E, Behavior[M]]): Behavior[M] =
+  def persistEventWithSnapshot(event: E, snapshot: S, onPersisted: Function[E, Behavior[M]]): Behavior[M] =
     persistEventWithSnapshot(event, snapshot, false, onPersisted)
 
   /**

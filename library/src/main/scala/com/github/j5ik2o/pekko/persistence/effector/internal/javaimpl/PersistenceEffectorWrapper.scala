@@ -32,8 +32,8 @@ private[effector] object PersistenceEffectorWrapper {
 }
 
 /**
- * Wrapper class that adapts a Scala PersistenceEffector to the Java API. This class converts
- * between Scala and Java types and function interfaces.
+ * Wrapper class that adapts a Scala PersistenceEffector to the Java API. This class converts between Scala and Java
+ * types and function interfaces.
  *
  * @param underlying
  *   The Scala PersistenceEffector to wrap
@@ -48,9 +48,7 @@ private[effector] final class PersistenceEffectorWrapper[S, E, M] private (
   underlying: ScalaDPE[S, E, M],
 ) extends PersistenceEffector[S, E, M] {
 
-  override def persistEvent(
-    event: E,
-    onPersisted: java.util.function.Function[E, Behavior[M]]): Behavior[M] =
+  override def persistEvent(event: E, onPersisted: java.util.function.Function[E, Behavior[M]]): Behavior[M] =
     underlying.persistEvent(event)(e => onPersisted.apply(e))
 
   override def persistEvents(

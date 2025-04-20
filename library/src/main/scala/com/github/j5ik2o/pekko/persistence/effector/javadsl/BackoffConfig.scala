@@ -6,8 +6,7 @@ import com.github.j5ik2o.pekko.persistence.effector.scaladsl.BackoffConfig as SB
 import scala.jdk.DurationConverters.*
 
 /**
- * Configuration for backoff strategy in Java API. This class defines how to handle failures with
- * backoff.
+ * Configuration for backoff strategy in Java API. This class defines how to handle failures with backoff.
  */
 trait BackoffConfig {
 
@@ -72,8 +71,7 @@ object BackoffConfig {
     Some((self.minBackoff, self.maxBackoff, self.randomFactor))
 
   /**
-   * Default backoff configuration. Uses 1 second minimum backoff, 60-second maximum backoff, and
-   * 0.2 random factors.
+   * Default backoff configuration. Uses 1 second minimum backoff, 60-second maximum backoff, and 0.2 random factors.
    */
   final val Default: BackoffConfig = apply()
 

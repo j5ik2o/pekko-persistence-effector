@@ -14,8 +14,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.*
 
 /**
- * Base test class for PersistenceEffector. Specific mode (Persisted/InMemory) is specified in
- * subclasses
+ * Base test class for PersistenceEffector. Specific mode (Persisted/InMemory) is specified in subclasses
  */
 abstract class PersistenceEffectorTestBase
   extends ScalaTestWithActorTestKit(TestConfig.config)
@@ -37,8 +36,7 @@ abstract class PersistenceEffectorTestBase
   def persistenceMode: PersistenceMode
 
   /**
-   * Whether to run snapshot tests. Subclasses can override this to disable snapshot tests if
-   * needed.
+   * Whether to run snapshot tests. Subclasses can override this to disable snapshot tests if needed.
    *
    * @return
    *   true to run snapshot tests, false to skip them
@@ -50,20 +48,16 @@ abstract class PersistenceEffectorTestBase
   val messageConverter: MessageConverter[TestState, TestEvent, TestMessage] =
     if (isCustomConverter) {
       new MessageConverter[TestState, TestEvent, TestMessage] {
-        override def wrapPersistedEvents(
-          events: Seq[TestEvent]): TestMessage & PersistedEvent[TestEvent, TestMessage] =
+        override def wrapPersistedEvents(events: Seq[TestEvent]): TestMessage & PersistedEvent[TestEvent, TestMessage] =
           TestMessage.EventPersisted(events)
 
-        override def wrapPersistedSnapshot(
-          state: TestState): TestMessage & PersistedState[TestState, TestMessage] =
+        override def wrapPersistedSnapshot(state: TestState): TestMessage & PersistedState[TestState, TestMessage] =
           TestMessage.SnapshotPersisted(state)
 
-        override def wrapRecoveredState(
-          state: TestState): TestMessage & RecoveredState[TestState, TestMessage] =
+        override def wrapRecoveredState(state: TestState): TestMessage & RecoveredState[TestState, TestMessage] =
           TestMessage.StateRecovered(state)
 
-        override def wrapDeleteSnapshots(
-          maxSequenceNumber: Long): TestMessage & DeletedSnapshots[TestMessage] =
+        override def wrapDeleteSnapshots(maxSequenceNumber: Long): TestMessage & DeletedSnapshots[TestMessage] =
           TestMessage.SnapshotsDeleted(maxSequenceNumber)
       }
     } else
@@ -91,12 +85,11 @@ abstract class PersistenceEffectorTestBase
       val recoveredEvents = ArrayBuffer.empty[TestMessage]
 
       val behavior = spawn(Behaviors.setup[TestMessage] { context =>
-        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) {
-          case (state, effector) =>
-            recoveredEvents += TestMessage.StateRecovered(state)
-            Behaviors.receiveMessage { _ =>
-              Behaviors.same
-            }
+        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) { case (state, effector) =>
+          recoveredEvents += TestMessage.StateRecovered(state)
+          Behaviors.receiveMessage { _ =>
+            Behaviors.same
+          }
         }(using context)
       })
 
@@ -129,12 +122,11 @@ abstract class PersistenceEffectorTestBase
       val probe = createTestProbe[TestMessage]()
 
       val behavior = spawn(Behaviors.setup[TestMessage] { context =>
-        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) {
-          case (state, effector) =>
-            effector.persistEvent(event) { _ =>
-              events += TestMessage.EventPersisted(Seq(event))
-              Behaviors.stopped
-            }
+        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) { case (state, effector) =>
+          effector.persistEvent(event) { _ =>
+            events += TestMessage.EventPersisted(Seq(event))
+            Behaviors.stopped
+          }
         }(using context)
       })
 
@@ -168,12 +160,11 @@ abstract class PersistenceEffectorTestBase
       val probe = createTestProbe[TestMessage]()
 
       val behavior = spawn(Behaviors.setup[TestMessage] { context =>
-        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) {
-          case (state, effector) =>
-            effector.persistEvents(initialEvents) { _ =>
-              events += TestMessage.EventPersisted(initialEvents)
-              Behaviors.stopped
-            }
+        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) { case (state, effector) =>
+          effector.persistEvents(initialEvents) { _ =>
+            events += TestMessage.EventPersisted(initialEvents)
+            Behaviors.stopped
+          }
         }(using context)
       })
 
@@ -210,17 +201,16 @@ abstract class PersistenceEffectorTestBase
 
       // Run the first actor and persist events
       val behavior1 = spawn(Behaviors.setup[TestMessage] { context =>
-        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config1) {
-          case (state, effector) =>
-            // First persist the first event
-            effector.persistEvent(event1) { _ =>
-              // Then persist the second event
-              effector.persistEvent(event2) { _ =>
-                firstRunEvents += TestMessage.EventPersisted(Seq(event1, event2))
-                // Stop the actor after event persistence is complete
-                Behaviors.stopped
-              }
+        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config1) { case (state, effector) =>
+          // First persist the first event
+          effector.persistEvent(event1) { _ =>
+            // Then persist the second event
+            effector.persistEvent(event2) { _ =>
+              firstRunEvents += TestMessage.EventPersisted(Seq(event1, event2))
+              // Stop the actor after event persistence is complete
+              Behaviors.stopped
             }
+          }
         }(using context)
       })
 
@@ -252,15 +242,14 @@ abstract class PersistenceEffectorTestBase
 
       // Run the second actor (same ID)
       val behavior2 = spawn(Behaviors.setup[TestMessage] { context =>
-        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config2) {
-          case (state, effector) =>
-            // Record the restored state
-            secondRunRecoveredState += state
-            // Send a message to the probe to notify the state
-            probe2.ref ! TestMessage.StateRecovered(state)
-            Behaviors.receiveMessage { _ =>
-              Behaviors.same
-            }
+        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config2) { case (state, effector) =>
+          // Record the restored state
+          secondRunRecoveredState += state
+          // Send a message to the probe to notify the state
+          probe2.ref ! TestMessage.StateRecovered(state)
+          Behaviors.receiveMessage { _ =>
+            Behaviors.same
+          }
         }(using context)
       })
 
@@ -311,24 +300,22 @@ abstract class PersistenceEffectorTestBase
       val probe = createTestProbe[TestState]()
 
       val behavior = spawn(Behaviors.setup[TestMessage] { context =>
-        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) {
-          case (state, effector) =>
-            // Use persistEventWithState
-            effector.persistEventWithSnapshot(event, newState, forceSnapshot = true) {
-              persistedEvent =>
-                events += TestMessage.EventPersisted(Seq(event))
+        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) { case (state, effector) =>
+          // Use persistEventWithState
+          effector.persistEventWithSnapshot(event, newState, forceSnapshot = true) { persistedEvent =>
+            events += TestMessage.EventPersisted(Seq(event))
 
-                // Verify that the snapshot has been saved
-                // For InMemoryEffector, snapshots are saved immediately
-                if (persistenceMode == PersistenceMode.Ephemeral) {
-                  val inMemoryEffector =
-                    effector.asInstanceOf[InMemoryEffector[TestState, TestEvent, TestMessage]]
-                  val savedState = inMemoryEffector.getState
-                  probe.ref ! savedState
-                }
-
-                Behaviors.stopped
+            // Verify that the snapshot has been saved
+            // For InMemoryEffector, snapshots are saved immediately
+            if (persistenceMode == PersistenceMode.Ephemeral) {
+              val inMemoryEffector =
+                effector.asInstanceOf[InMemoryEffector[TestState, TestEvent, TestMessage]]
+              val savedState = inMemoryEffector.getState
+              probe.ref ! savedState
             }
+
+            Behaviors.stopped
+          }
         }(using context)
       })
 
@@ -376,23 +363,22 @@ abstract class PersistenceEffectorTestBase
       val probe = createTestProbe[TestState]()
 
       val behavior = spawn(Behaviors.setup[TestMessage] { context =>
-        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) {
-          case (state, effector) =>
-            // Use persistEventsWithState
-            effector.persistEventsWithSnapshot(events, newState, forceSnapshot = true) { _ =>
-              persistedEvents += TestMessage.EventPersisted(events)
+        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) { case (state, effector) =>
+          // Use persistEventsWithState
+          effector.persistEventsWithSnapshot(events, newState, forceSnapshot = true) { _ =>
+            persistedEvents += TestMessage.EventPersisted(events)
 
-              // Verify that the snapshot has been saved
-              // For InMemoryEffector, snapshots are saved immediately
-              if (persistenceMode == PersistenceMode.Ephemeral) {
-                val inMemoryEffector =
-                  effector.asInstanceOf[InMemoryEffector[TestState, TestEvent, TestMessage]]
-                val savedState = inMemoryEffector.getState
-                probe.ref ! savedState
-              }
-
-              Behaviors.stopped
+            // Verify that the snapshot has been saved
+            // For InMemoryEffector, snapshots are saved immediately
+            if (persistenceMode == PersistenceMode.Ephemeral) {
+              val inMemoryEffector =
+                effector.asInstanceOf[InMemoryEffector[TestState, TestEvent, TestMessage]]
+              val savedState = inMemoryEffector.getState
+              probe.ref ! savedState
             }
+
+            Behaviors.stopped
+          }
         }(using context)
       })
 
@@ -438,26 +424,25 @@ abstract class PersistenceEffectorTestBase
       val probe = createTestProbe[TestState]()
 
       val behavior = spawn(Behaviors.setup[TestMessage] { context =>
-        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) {
-          case (state, effector) =>
-            // First persist the event
-            effector.persistEvent(event) { _ =>
-              events += TestMessage.EventPersisted(Seq(event))
+        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) { case (state, effector) =>
+          // First persist the event
+          effector.persistEvent(event) { _ =>
+            events += TestMessage.EventPersisted(Seq(event))
 
-              // Persist snapshot with force=true
-              effector.persistSnapshot(newState, force = true) { persistedSnapshot =>
-                // Verify that the snapshot has been saved
-                // For InMemoryEffector, snapshots are saved immediately
-                if (persistenceMode == PersistenceMode.Ephemeral) {
-                  val inMemoryEffector =
-                    effector.asInstanceOf[InMemoryEffector[TestState, TestEvent, TestMessage]]
-                  val savedState = inMemoryEffector.getState
-                  probe.ref ! savedState
-                }
-
-                Behaviors.stopped
+            // Persist snapshot with force=true
+            effector.persistSnapshot(newState, force = true) { persistedSnapshot =>
+              // Verify that the snapshot has been saved
+              // For InMemoryEffector, snapshots are saved immediately
+              if (persistenceMode == PersistenceMode.Ephemeral) {
+                val inMemoryEffector =
+                  effector.asInstanceOf[InMemoryEffector[TestState, TestEvent, TestMessage]]
+                val savedState = inMemoryEffector.getState
+                probe.ref ! savedState
               }
+
+              Behaviors.stopped
             }
+          }
         }(using context)
       })
 
@@ -523,10 +508,7 @@ abstract class PersistenceEffectorTestBase
               events += TestMessage.EventPersisted(Seq(event1))
 
               // Event 2 & explicit snapshot 1
-              effector.persistEventWithSnapshot(
-                event2,
-                currentState.applyEvent(event2),
-                forceSnapshot = true) { _ =>
+              effector.persistEventWithSnapshot(event2, currentState.applyEvent(event2), forceSnapshot = true) { _ =>
                 currentState = currentState.applyEvent(event2)
                 events += TestMessage.EventPersisted(Seq(event2))
 
@@ -536,40 +518,38 @@ abstract class PersistenceEffectorTestBase
                   events += TestMessage.EventPersisted(Seq(event3))
 
                   // Event 4 & explicit snapshot 2
-                  effector.persistEventWithSnapshot(
-                    event4,
-                    currentState.applyEvent(event4),
-                    forceSnapshot = true) { _ =>
-                    currentState = currentState.applyEvent(event4)
-                    events += TestMessage.EventPersisted(Seq(event4))
+                  effector.persistEventWithSnapshot(event4, currentState.applyEvent(event4), forceSnapshot = true) {
+                    _ =>
+                      currentState = currentState.applyEvent(event4)
+                      events += TestMessage.EventPersisted(Seq(event4))
 
-                    // Event 5
-                    effector.persistEvent(event5) { _ =>
-                      currentState = currentState.applyEvent(event5)
-                      events += TestMessage.EventPersisted(Seq(event5))
+                      // Event 5
+                      effector.persistEvent(event5) { _ =>
+                        currentState = currentState.applyEvent(event5)
+                        events += TestMessage.EventPersisted(Seq(event5))
 
-                      // Event 6 & explicit snapshot 3
-                      effector.persistEventWithSnapshot(
-                        event6,
-                        currentState.applyEvent(event6),
-                        forceSnapshot = true) { _ =>
-                        currentState = currentState.applyEvent(event6)
-                        events += TestMessage.EventPersisted(Seq(event6))
+                        // Event 6 & explicit snapshot 3
+                        effector.persistEventWithSnapshot(
+                          event6,
+                          currentState.applyEvent(event6),
+                          forceSnapshot = true) { _ =>
+                          currentState = currentState.applyEvent(event6)
+                          events += TestMessage.EventPersisted(Seq(event6))
 
-                        // For InMemoryEffector, verify the final state
-                        if (persistenceMode == PersistenceMode.Ephemeral) {
-                          val inMemoryEffector = effector
-                            .asInstanceOf[InMemoryEffector[TestState, TestEvent, TestMessage]]
-                          stateProbe.ref ! inMemoryEffector.getState
+                          // For InMemoryEffector, verify the final state
+                          if (persistenceMode == PersistenceMode.Ephemeral) {
+                            val inMemoryEffector = effector
+                              .asInstanceOf[InMemoryEffector[TestState, TestEvent, TestMessage]]
+                            stateProbe.ref ! inMemoryEffector.getState
 
-                          // Due to RetentionCriteria settings, snapshot with sequence number 2 should be deleted
-                          // Actual deletion confirmation depends on InMemoryEventStore implementation, so skip verification here
-                          probe.ref ! 2L // Expected deleted sequence number
+                            // Due to RetentionCriteria settings, snapshot with sequence number 2 should be deleted
+                            // Actual deletion confirmation depends on InMemoryEventStore implementation, so skip verification here
+                            probe.ref ! 2L // Expected deleted sequence number
+                          }
+
+                          Behaviors.stopped
                         }
-
-                        Behaviors.stopped
                       }
-                    }
                   }
                 }
               }
@@ -589,13 +569,7 @@ abstract class PersistenceEffectorTestBase
       // Check final state only for InMemoryEffector
       if (persistenceMode == PersistenceMode.Ephemeral) {
         val finalState = stateProbe.receiveMessage(3.seconds)
-        finalState.values should contain.allOf(
-          "event1",
-          "event2",
-          "event3",
-          "event4",
-          "event5",
-          "event6")
+        finalState.values should contain.allOf("event1", "event2", "event3", "event4", "event5", "event6")
         finalState.values.size shouldBe 6
 
         // Verify sequence number of deleted snapshot

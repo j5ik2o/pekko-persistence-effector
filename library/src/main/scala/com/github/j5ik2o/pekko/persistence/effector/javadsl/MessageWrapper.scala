@@ -3,8 +3,8 @@ package com.github.j5ik2o.pekko.persistence.effector.javadsl
 import scala.jdk.CollectionConverters.*
 
 /**
- * Base trait for all message wrappers in Java API. This trait is used to mark messages that can be
- * used with the PersistenceEffector.
+ * Base trait for all message wrappers in Java API. This trait is used to mark messages that can be used with the
+ * PersistenceEffector.
  *
  * @tparam M
  *   Type of message
@@ -12,8 +12,8 @@ import scala.jdk.CollectionConverters.*
 trait MessageWrapper[M]
 
 /**
- * Trait for messages containing persisted events in Java API. This trait is used to wrap events
- * that have been persisted.
+ * Trait for messages containing persisted events in Java API. This trait is used to wrap events that have been
+ * persisted.
  *
  * @tparam E
  *   Type of event
@@ -32,8 +32,8 @@ trait PersistedEvent[E, M] extends MessageWrapper[M] {
 }
 
 /**
- * Trait for messages containing persisted state in Java API. This trait is used to wrap state that
- * has been persisted as a snapshot.
+ * Trait for messages containing persisted state in Java API. This trait is used to wrap state that has been persisted
+ * as a snapshot.
  *
  * @tparam S
  *   Type of state
@@ -52,8 +52,8 @@ trait PersistedState[S, M] extends MessageWrapper[M] {
 }
 
 /**
- * Trait for messages containing recovered state in Java API. This trait is used to wrap state that
- * has been recovered from events or snapshots.
+ * Trait for messages containing recovered state in Java API. This trait is used to wrap state that has been recovered
+ * from events or snapshots.
  *
  * @tparam S
  *   Type of state
@@ -72,8 +72,8 @@ trait RecoveredState[S, M] extends MessageWrapper[M] {
 }
 
 /**
- * Trait for messages containing information about deleted snapshots in Java API. This trait is used
- * to wrap information about snapshots that have been deleted.
+ * Trait for messages containing information about deleted snapshots in Java API. This trait is used to wrap information
+ * about snapshots that have been deleted.
  *
  * @tparam M
  *   Type of message
@@ -90,8 +90,8 @@ trait DeletedSnapshots[M] extends MessageWrapper[M] {
 }
 
 /**
- * Adapter to convert the JavaDSL version of MessageWrapper to the ScalaDSL version. This object
- * provides adapter classes to convert between Java and Scala message wrappers.
+ * Adapter to convert the JavaDSL version of MessageWrapper to the ScalaDSL version. This object provides adapter
+ * classes to convert between Java and Scala message wrappers.
  */
 object MessageWrapperAdapter {
 

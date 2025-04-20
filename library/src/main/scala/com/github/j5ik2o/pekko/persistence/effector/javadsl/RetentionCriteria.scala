@@ -6,8 +6,8 @@ import com.github.j5ik2o.pekko.persistence.effector.scaladsl.RetentionCriteria a
 import scala.jdk.OptionConverters.*
 
 /**
- * Criteria for retention of snapshots and events in Java API. This class defines how many snapshots
- * and events should be kept.
+ * Criteria for retention of snapshots and events in Java API. This class defines how many snapshots and events should
+ * be kept.
  */
 trait RetentionCriteria {
 
@@ -37,8 +37,7 @@ trait RetentionCriteria {
 }
 
 /**
- * Companion object for RetentionCriteria. Provides factory methods to create RetentionCriteria
- * instances.
+ * Companion object for RetentionCriteria. Provides factory methods to create RetentionCriteria instances.
  */
 object RetentionCriteria {
 
@@ -66,14 +65,12 @@ object RetentionCriteria {
   private def apply(): RetentionCriteria =
     Impl(Optional.empty(), Optional.empty())
 
-  private def apply(
-    snapshotEvery: Optional[Integer],
-    keepNSnapshots: Optional[Integer]): RetentionCriteria =
+  private def apply(snapshotEvery: Optional[Integer], keepNSnapshots: Optional[Integer]): RetentionCriteria =
     Impl(snapshotEvery, keepNSnapshots)
 
   /**
-   * Default retention criteria with no specific settings. When this is used, no automatic snapshot
-   * retention policy will be applied.
+   * Default retention criteria with no specific settings. When this is used, no automatic snapshot retention policy
+   * will be applied.
    */
   final val Default: RetentionCriteria = apply()
 

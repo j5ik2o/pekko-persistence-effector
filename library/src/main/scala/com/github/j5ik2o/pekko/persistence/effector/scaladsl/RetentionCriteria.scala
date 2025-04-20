@@ -19,8 +19,8 @@ object RetentionCriteria {
     Some((self.snapshotEvery, self.keepNSnapshots))
 
   /**
-   * Default retention criteria with no specific settings. When this is used, no automatic snapshot
-   * retention policy will be applied.
+   * Default retention criteria with no specific settings. When this is used, no automatic snapshot retention policy
+   * will be applied.
    */
   final val Default: RetentionCriteria = Impl()
 

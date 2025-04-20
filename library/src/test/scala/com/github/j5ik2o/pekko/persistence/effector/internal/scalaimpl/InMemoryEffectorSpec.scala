@@ -45,21 +45,20 @@ class InMemoryEffectorSpec extends PersistenceEffectorTestBase {
       var updatedState: TestState = initialState
 
       val behavior = spawn(Behaviors.setup[TestMessage] { context =>
-        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) {
-          case (state, effector) =>
-            // Get InMemoryEffector by type casting
-            val inMemoryEffector =
-              effector.asInstanceOf[InMemoryEffector[TestState, TestEvent, TestMessage]]
-            effectorRef = Some(inMemoryEffector)
+        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) { case (state, effector) =>
+          // Get InMemoryEffector by type casting
+          val inMemoryEffector =
+            effector.asInstanceOf[InMemoryEffector[TestState, TestEvent, TestMessage]]
+          effectorRef = Some(inMemoryEffector)
 
-            // Manually update state (mimicking what a command handler would do)
-            updatedState = initialState.applyEvent(event)
+          // Manually update state (mimicking what a command handler would do)
+          updatedState = initialState.applyEvent(event)
 
-            // Persist event
-            effector.persistEvent(event) { _ =>
-              // Define receive processing since same cannot be used as initial Behavior
-              Behaviors.receiveMessage(_ => Behaviors.same)
-            }
+          // Persist event
+          effector.persistEvent(event) { _ =>
+            // Define receive processing since same cannot be used as initial Behavior
+            Behaviors.receiveMessage(_ => Behaviors.same)
+          }
         }(using context)
       })
 
@@ -102,21 +101,20 @@ class InMemoryEffectorSpec extends PersistenceEffectorTestBase {
         )
 
       val behavior = spawn(Behaviors.setup[TestMessage] { context =>
-        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) {
-          case (state, effector) =>
-            // Reset because applyEvent is called for initial state restoration
-            applyEventCount = 0
+        PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) { case (state, effector) =>
+          // Reset because applyEvent is called for initial state restoration
+          applyEventCount = 0
 
-            // Manually update state (normally done within domain logic)
-            val newState = countingApplyEvent(state, TestEvent.TestEventA("test-no-double"))
+          // Manually update state (normally done within domain logic)
+          val newState = countingApplyEvent(state, TestEvent.TestEventA("test-no-double"))
 
-            // Persist event (applyEvent should not be called here)
-            effector
-              .asInstanceOf[InMemoryEffector[TestState, TestEvent, TestMessage]]
-              .persistEvent(TestEvent.TestEventA("test-no-double")) { _ =>
-                // Define receive processing since same cannot be used as initial Behavior
-                Behaviors.receiveMessage(_ => Behaviors.same)
-              }
+          // Persist event (applyEvent should not be called here)
+          effector
+            .asInstanceOf[InMemoryEffector[TestState, TestEvent, TestMessage]]
+            .persistEvent(TestEvent.TestEventA("test-no-double")) { _ =>
+              // Define receive processing since same cannot be used as initial Behavior
+              Behaviors.receiveMessage(_ => Behaviors.same)
+            }
         }(using context)
       })
 
