@@ -1,4 +1,5 @@
 import Dependencies.*
+import com.google.googlejavaformat.java.JavaFormatterOptions
 
 ThisBuild / organization := "com.github.j5ik2o"
 ThisBuild / organizationName := "com.github.j5ik2o"
@@ -20,70 +21,113 @@ ThisBuild / scmInfo := Some(
   ),
 )
 
-ThisBuild / publishMavenStyle := true
-ThisBuild / publishTo := Some(
-  "GitHub Package Registry" at
-    "https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector",
-)
-ThisBuild / credentials += Credentials(
-  "GitHub Package Registry",
-  "maven.pkg.github.com",
-  sys.env.getOrElse("GITHUB_ACTOR", ""),
-  sys.env.getOrElse("GITHUB_TOKEN", ""),
+// publish設定（libraryモジュールに移動）
+val publishSettings = Seq(
+  publishMavenStyle := true,
+  publishTo := Some(
+    "GitHub Package Registry" at
+      "https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector",
+  ),
+  credentials += Credentials(
+    "GitHub Package Registry",
+    "maven.pkg.github.com",
+    sys.env.getOrElse("GITHUB_ACTOR", ""),
+    sys.env.getOrElse("GITHUB_TOKEN", ""),
+  ),
 )
 
+val testSettings = Seq(
+  libraryDependencies ++= Seq(
+    slf4j.julToSlf4J % Test,
+    logback.classic % Test,
+    scalatest.scalatest % Test,
+    apachePekko.actorTestKitTyped % Test,
+    apachePekko.serializationJackson % Test,
+    "org.iq80.leveldb" % "leveldb" % "0.12" % Test,
+    "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8" % Test,
+  ),
+  // IntelliJでのテスト実行時にLevelDBの依存関係が確実に含まれるようにする
+  Compile / unmanagedClasspath += baseDirectory.value / "target" / "scala-3.6.4" / "test-classes",
+  Test / testOptions += Tests.Setup { () =>
+    val journalDir = new java.io.File("target/journal")
+    val snapshotDir = new java.io.File("target/snapshot")
+    if (!journalDir.exists()) journalDir.mkdirs()
+    if (!snapshotDir.exists()) snapshotDir.mkdirs()
+  },
+  Test / fork := true,
+  Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oD"),
+  Test / javaOptions += s"-Djacoco-agent.destfile=target/scala-${scalaVersion.value}/jacoco/data/jacoco.exec",
+  jacocoIncludes := Seq("*com.github.j5ik2o*"),
+  jacocoExcludes := Seq(),
+)
+
+// 共通設定
+val baseSettings = Seq(
+  javacOptions ++= Seq("-source", "17", "-target", "17"),
+  scalacOptions ++= Seq(
+    "-encoding",
+    "utf8",
+    "-feature",
+    "-deprecation",
+    "-unchecked",
+    "-source:future",
+    "-language:implicitConversions",
+    "-language:higherKinds",
+    "-language:postfixOps",
+    "-language:adhocExtensions",
+    "-explain",
+    "-explain-types",
+    "-Wunused:imports,privates",
+    "-rewrite",
+    "-no-indent",
+    "-experimental",
+  ),
+  semanticdbEnabled := true,
+  semanticdbVersion := scalafixSemanticdb.revision,
+)
+
+// ルートプロジェクト（publishなし）
 lazy val root = (project in file("."))
+  .aggregate(library, example)
+  .settings(
+    name := "pekko-persistence-effector-root",
+    publish / skip := true,
+  )
+
+// ライブラリプロジェクト（publish対象）
+lazy val library = (project in file("library"))
+  .settings(baseSettings)
+  .settings(testSettings)
+  .settings(publishSettings)
   .settings(
     name := "pekko-persistence-effector",
-    javacOptions ++= Seq("-source", "17", "-target", "17"),
-    scalacOptions ++= Seq(
-      "-encoding",
-      "utf8", // ソースファイルの文字コード指定
-      "-feature", // 言語機能使用時に警告
-      "-deprecation", // 非推奨API使用時に警告
-      "-unchecked", // 型消去によって型安全が損なわれる場合に詳細情報
-      "-source:future", // 将来のバージョンの機能を使用可能に
-      "-language:implicitConversions", // 暗黙の型変換を許可
-      "-language:higherKinds", // 高階型を許可
-      "-language:postfixOps", // 後置演算子を許可
-      "-language:adhocExtensions",
-      "-explain", // コンパイルエラーと警告に詳細な説明を追加
-      "-explain-types", // 型関連のエラーで詳細な型情報を表示
-      "-Wunused:imports,privates", // 使用されていないインポートとプライベートメンバーに警告
-      "-rewrite", // 書き換えを有効に
-      "-no-indent", // インデント構文を拒否し、中括弧に変換
-      "-experimental",
-    ),
+    // 現在のライブラリの依存関係をそのまま維持
     libraryDependencies ++= Seq(
       slf4j.api,
       apachePekko.slf4j,
       apachePekko.actorTyped,
       apachePekko.persistence,
-      slf4j.julToSlf4J % Test,
-      logback.classic % Test,
-      scalatest.scalatest % Test,
-      apachePekko.actorTestKitTyped % Test,
-      apachePekko.serializationJackson % Test,
-      "org.iq80.leveldb" % "leveldb" % "0.12" % Test,
-      "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8" % Test,
     ),
-    // IntelliJでのテスト実行時にLevelDBの依存関係が確実に含まれるようにする
-    Compile / unmanagedClasspath += baseDirectory.value / "target" / "scala-3.6.4" / "test-classes",
-    Test / testOptions += Tests.Setup { () =>
-      val journalDir = new java.io.File("target/journal")
-      val snapshotDir = new java.io.File("target/snapshot")
-      if (!journalDir.exists()) journalDir.mkdirs()
-      if (!snapshotDir.exists()) snapshotDir.mkdirs()
-    },
-    semanticdbEnabled := true,
-    semanticdbVersion := scalafixSemanticdb.revision,
-    Test / fork := true,
-    Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oD"),
-    Test / javaOptions += s"-Djacoco-agent.destfile=target/scala-${scalaVersion.value}/jacoco/data/jacoco.exec",
-    jacocoIncludes := Seq("*com.github.j5ik2o*"),
-    jacocoExcludes := Seq(),
   )
 
-addCommandAlias("lint", ";scalafmtCheck;test:scalafmtCheck;scalafmtSbtCheck;scalafixAll --check")
-addCommandAlias("fmt", ";scalafmtAll;scalafmtSbt;scalafix RemoveUnused")
+// サンプルプロジェクト（publishなし）
+lazy val example = (project in file("example"))
+  .settings(baseSettings)
+  .settings(testSettings)
+  .settings(
+    name := "pekko-persistence-effector-example",
+    publish / skip := true,
+    libraryDependencies ++= Seq(
+      logback.classic,
+      apachePekko.slf4j,
+      apachePekko.persistenceTyped,
+    ),
+  )
+  .dependsOn(library)
+
+// 既存のコマンドエイリアスを維持
+addCommandAlias(
+  "lint",
+  ";scalafmtCheck;test:scalafmtCheck;scalafmtSbtCheck;scalafixAll --check;javafmtCheckAll")
+addCommandAlias("fmt", ";scalafmtAll;scalafmtSbt;scalafix RemoveUnused;javafmtAll")
 addCommandAlias("testCoverage", ";test;jacocoAggregateReport")
