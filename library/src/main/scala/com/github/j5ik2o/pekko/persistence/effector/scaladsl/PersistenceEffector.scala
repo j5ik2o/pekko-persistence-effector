@@ -1,8 +1,9 @@
 package com.github.j5ik2o.pekko.persistence.effector.scaladsl
 
 import com.github.j5ik2o.pekko.persistence.effector.internal.scalaimpl.PersistenceStoreProtocol.*
-import com.github.j5ik2o.pekko.persistence.effector.internal.scalaimpl.DefaultPersistenceEffector
 import com.github.j5ik2o.pekko.persistence.effector.internal.scalaimpl.{
+  DefaultPersistenceEffector,
+  DeferredEffector,
   InMemoryEffector,
   PersistenceStoreActor,
 }
@@ -367,6 +368,12 @@ object PersistenceEffector {
             config,
           )
           // Use initial state directly because it's in-memory
+          onReady(effector.getState, effector)
+        }
+      case PersistenceMode.Deferred =>
+        // Deferred mode
+        Behaviors.withStash(config.stashSize) { stashBuffer =>
+          val effector = new DeferredEffector[S, E, M](context, config)
           onReady(effector.getState, effector)
         }
     }

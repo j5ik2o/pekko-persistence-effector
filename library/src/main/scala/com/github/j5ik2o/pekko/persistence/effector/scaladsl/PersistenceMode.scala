@@ -19,4 +19,12 @@ enum PersistenceMode {
    * scenarios where persistence is not required.
    */
   case Ephemeral
+
+  /**
+   * Deferred persistence mode where persistence operations (persistEvent, etc.) are no-ops. This
+   * mode effectively disables persistence without changing the code path. Useful for scenarios
+   * where you want to temporarily disable persistence, performance testing, or when implementing
+   * dry-run functionality.
+   */
+  case Deferred
 }
