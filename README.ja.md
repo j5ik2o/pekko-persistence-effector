@@ -393,7 +393,7 @@ Maven (`pom.xml`) の場合：
   </dependency>
 </dependencies>
 ```
-*(GitHub Packages の認証設定を忘れずに行ってください)*
+
 
 ## ライセンス
 

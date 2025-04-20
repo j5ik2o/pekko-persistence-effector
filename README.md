@@ -394,7 +394,7 @@ Add the following to your `pom.xml`:
 </dependencies>
 ```
 
-*(Remember to configure authentication for GitHub Packages)*
+
 
 ## License
 
