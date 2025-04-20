@@ -8,15 +8,31 @@ import scala.jdk.OptionConverters.*
 /**
  * Criteria for retention of snapshots and events in Java API. This class defines how many snapshots
  * and events should be kept.
- *
- * @param snapshotEvery
- *   Optional number of events after which a snapshot should be taken
- * @param keepNSnapshots
- *   Optional number of snapshots to keep
  */
 trait RetentionCriteria {
+
+  /**
+   * Convert this Java RetentionCriteria to its Scala equivalent.
+   *
+   * @return
+   *   snapshotEvery
+   */
   def snapshotEvery: Optional[Integer]
+
+  /**
+   * Convert this Java RetentionCriteria to its Scala equivalent.
+   *
+   * @return
+   *   keepNSnapshots
+   */
   def keepNSnapshots: Optional[Integer]
+
+  /**
+   * Convert this Java RetentionCriteria to its Scala equivalent.
+   *
+   * @return
+   *   Scala version of this RetentionCriteria
+   */
   private[effector] def toScala: SRetentionCriteria
 }
 
