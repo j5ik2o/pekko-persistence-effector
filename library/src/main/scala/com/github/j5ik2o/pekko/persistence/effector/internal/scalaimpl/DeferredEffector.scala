@@ -1,9 +1,6 @@
 package com.github.j5ik2o.pekko.persistence.effector.internal.scalaimpl
 
-import com.github.j5ik2o.pekko.persistence.effector.scaladsl.{
-  PersistenceEffector,
-  PersistenceEffectorConfig,
-}
+import com.github.j5ik2o.pekko.persistence.effector.scaladsl.{PersistenceEffector, PersistenceEffectorConfig}
 import org.apache.pekko.actor.typed.Behavior
 import org.apache.pekko.actor.typed.scaladsl.ActorContext
 
@@ -20,8 +17,7 @@ private[effector] class DeferredEffector[S, E, M](
   override def persistEvents(events: Seq[E])(onPersisted: Seq[E] => Behavior[M]): Behavior[M] =
     onPersisted(events)
 
-  override def persistSnapshot(snapshot: S, force: Boolean)(
-    onPersisted: S => Behavior[M]): Behavior[M] =
+  override def persistSnapshot(snapshot: S, force: Boolean)(onPersisted: S => Behavior[M]): Behavior[M] =
     onPersisted(snapshot)
 
   override def persistEventWithSnapshot(event: E, snapshot: S, forceSnapshot: Boolean)(

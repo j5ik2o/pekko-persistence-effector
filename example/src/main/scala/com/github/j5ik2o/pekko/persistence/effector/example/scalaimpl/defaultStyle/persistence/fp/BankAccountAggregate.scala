@@ -3,12 +3,7 @@ package com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.defaultSt
 import com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.*
 import org.apache.pekko.actor.typed.Behavior
 import org.apache.pekko.persistence.typed.PersistenceId
-import org.apache.pekko.persistence.typed.scaladsl.{
-  Effect,
-  EventSourcedBehavior,
-  ReplyEffect,
-  RetentionCriteria,
-}
+import org.apache.pekko.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 
 import java.time.Instant
 
@@ -25,14 +20,12 @@ object BankAccountAggregate {
       .snapshotWhen((_, _, seqNr) => seqNr % 2 == 0)
       .withTagger(_ => Set(id.aggregateTypeName))
 
-  private def eventHandler
-    : (BankAccountAggregateState, BankAccountEvent) => BankAccountAggregateState = {
+  private def eventHandler: (BankAccountAggregateState, BankAccountEvent) => BankAccountAggregateState = {
     case (state, event) => state.applyEvent(event)
   }
 
-  private def commandHandler: (
-    BankAccountAggregateState,
-    BankAccountCommand) => ReplyEffect[BankAccountEvent, BankAccountAggregateState] = {
+  private def commandHandler
+    : (BankAccountAggregateState, BankAccountCommand) => ReplyEffect[BankAccountEvent, BankAccountAggregateState] = {
     (state, cmd) =>
       (state, cmd) match {
         case (
@@ -79,16 +72,12 @@ object BankAccountAggregate {
                 WithdrawCashReply.Failed(aggregateId, BankAccountError.InsufficientFundsError)
               }
           }
-        case (
-              BankAccountAggregateState.Created(aggregateId, bankAccount),
-              BankAccountCommand.GetBalance(_, replyTo)) =>
+        case (BankAccountAggregateState.Created(aggregateId, bankAccount), BankAccountCommand.GetBalance(_, replyTo)) =>
           Effect.none
             .thenReply(replyTo) { _ =>
               GetBalanceReply.Succeeded(aggregateId, bankAccount.balance)
             }
-        case (
-              BankAccountAggregateState.Created(aggregateId, _),
-              BankAccountCommand.Stop(_, replyTo)) =>
+        case (BankAccountAggregateState.Created(aggregateId, _), BankAccountCommand.Stop(_, replyTo)) =>
           Effect.none
             .thenReply(replyTo) { _ =>
               StopReply.Succeeded(aggregateId)

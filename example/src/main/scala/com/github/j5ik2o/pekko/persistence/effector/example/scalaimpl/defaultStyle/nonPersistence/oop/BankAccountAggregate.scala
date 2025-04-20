@@ -34,8 +34,8 @@ final class BankAccountAggregate(id: BankAccountId, initialState: BankAccountAgg
   override def onMessage(msg: BankAccountCommand): Behavior[BankAccountCommand] =
     bf(msg)
 
-  private def notCreated(state: BankAccountAggregateState.NotCreated)
-    : PartialFunction[BankAccountCommand, Behavior[BankAccountCommand]] = {
+  private def notCreated(
+    state: BankAccountAggregateState.NotCreated): PartialFunction[BankAccountCommand, Behavior[BankAccountCommand]] = {
     case BankAccountCommand.Create(aggregateId, limit, balance, replyTo) =>
       val Result(bankAccount, event) = BankAccount.create(aggregateId, limit, balance)
       replyTo ! CreateReply.Succeeded(aggregateId)
@@ -45,8 +45,8 @@ final class BankAccountAggregate(id: BankAccountId, initialState: BankAccountAgg
       this
   }
 
-  private def created(state: BankAccountAggregateState.Created)
-    : PartialFunction[BankAccountCommand, Behavior[BankAccountCommand]] = {
+  private def created(
+    state: BankAccountAggregateState.Created): PartialFunction[BankAccountCommand, Behavior[BankAccountCommand]] = {
     case BankAccountCommand.Stop(aggregateId, replyTo) =>
       replyTo ! StopReply.Succeeded(aggregateId)
       Behaviors.stopped

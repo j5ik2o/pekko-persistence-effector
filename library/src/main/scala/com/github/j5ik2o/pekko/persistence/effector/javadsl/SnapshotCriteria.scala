@@ -37,14 +37,13 @@ sealed trait SnapshotCriteria[S, E] {
 }
 
 /**
- * Companion object for SnapshotCriteria. Provides factory methods to create SnapshotCriteria
- * instances.
+ * Companion object for SnapshotCriteria. Provides factory methods to create SnapshotCriteria instances.
  */
 object SnapshotCriteria {
 
   /**
-   * Functional interface for a function that takes three arguments and returns a result. Used for
-   * event-based snapshot criteria.
+   * Functional interface for a function that takes three arguments and returns a result. Used for event-based snapshot
+   * criteria.
    *
    * @tparam T1
    *   Type of first argument
@@ -119,8 +118,7 @@ object SnapshotCriteria {
    * @param criteria
    *   List of criteria to combine
    * @param requireAll
-   *   If true, all criteria must return true (AND), otherwise any criteria returning true is
-   *   sufficient (OR)
+   *   If true, all criteria must return true (AND), otherwise any criteria returning true is sufficient (OR)
    * @tparam S
    *   Type of state
    * @tparam E
@@ -180,8 +178,7 @@ object SnapshotCriteria {
    * @param criteria
    *   List of criteria to combine
    * @param requireAll
-   *   If true, all criteria must return true (AND), otherwise any criteria returning true is
-   *   sufficient (OR)
+   *   If true, all criteria must return true (AND), otherwise any criteria returning true is sufficient (OR)
    * @tparam S
    *   Type of state
    * @tparam E
@@ -189,9 +186,7 @@ object SnapshotCriteria {
    * @return
    *   SnapshotCriteria instance
    */
-  def combined[S, E](
-    criteria: java.util.List[SnapshotCriteria[S, E]],
-    requireAll: Boolean): SnapshotCriteria[S, E] =
+  def combined[S, E](criteria: java.util.List[SnapshotCriteria[S, E]], requireAll: Boolean): SnapshotCriteria[S, E] =
     JCombined(criteria, requireAll)
 
   /**

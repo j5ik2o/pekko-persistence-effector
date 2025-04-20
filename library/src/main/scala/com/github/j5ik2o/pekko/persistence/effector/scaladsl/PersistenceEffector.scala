@@ -13,8 +13,8 @@ import org.apache.pekko.actor.typed.{ActorRef, Behavior}
 import scala.compiletime.asMatchable
 
 /**
- * Trait defining the persistence operations for event sourcing. This trait provides methods to
- * persist events and snapshots, and to manage the lifecycle of persisted data.
+ * Trait defining the persistence operations for event sourcing. This trait provides methods to persist events and
+ * snapshots, and to manage the lifecycle of persisted data.
  *
  * @tparam S
  *   Type of state
@@ -77,8 +77,7 @@ trait PersistenceEffector[S, E, M] {
   def persistSnapshot(snapshot: S, force: Boolean)(onPersisted: S => Behavior[M]): Behavior[M]
 
   /**
-   * Persist an event and evaluate snapshot criteria with the current state (for backward
-   * compatibility).
+   * Persist an event and evaluate snapshot criteria with the current state (for backward compatibility).
    *
    * @param event
    *   Event to persist
@@ -110,8 +109,7 @@ trait PersistenceEffector[S, E, M] {
     onPersisted: E => Behavior[M]): Behavior[M]
 
   /**
-   * Persist multiple events and evaluate snapshot criteria with the current state (for backward
-   * compatibility).
+   * Persist multiple events and evaluate snapshot criteria with the current state (for backward compatibility).
    *
    * @param events
    *   Sequence of events to persist
@@ -122,8 +120,7 @@ trait PersistenceEffector[S, E, M] {
    * @return
    *   The behavior returned by the callback
    */
-  def persistEventsWithSnapshot(events: Seq[E], snapshot: S)(
-    onPersisted: Seq[E] => Behavior[M]): Behavior[M] =
+  def persistEventsWithSnapshot(events: Seq[E], snapshot: S)(onPersisted: Seq[E] => Behavior[M]): Behavior[M] =
     persistEventsWithSnapshot(events, snapshot, forceSnapshot = false)(onPersisted)
 
   /**

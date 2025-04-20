@@ -143,9 +143,7 @@ private[effector] final class DefaultPersistenceEffector[S, E, M](
    * @return
    *   Waiting behavior
    */
-  private def deleteOldSnapshots(
-    retention: RetentionCriteria,
-    onDeleted: => Behavior[M]): Behavior[M] = {
+  private def deleteOldSnapshots(retention: RetentionCriteria, onDeleted: => Behavior[M]): Behavior[M] = {
     val currentSequenceNumber = getCurrentSequenceNumber
     val maxSequenceNumberToDelete =
       calculateMaxSequenceNumberToDelete(currentSequenceNumber, retention)
@@ -181,11 +179,7 @@ private[effector] final class DefaultPersistenceEffector[S, E, M](
    * @return
    *   Whether a snapshot should be taken
    */
-  private def shouldTakeSnapshot(
-    event: E,
-    state: S,
-    sequenceNumber: Long,
-    force: Boolean): Boolean =
+  private def shouldTakeSnapshot(event: E, state: S, sequenceNumber: Long, force: Boolean): Boolean =
     force || config.snapshotCriteria.exists { criteria =>
       val result = criteria.shouldTakeSnapshot(event, state, sequenceNumber)
       ctx.log.debug("Snapshot criteria evaluation result: {}", result)
@@ -242,8 +236,7 @@ private[effector] final class DefaultPersistenceEffector[S, E, M](
     )
   }
 
-  override def persistSnapshot(snapshot: S, force: Boolean)(
-    onPersisted: S => Behavior[M]): Behavior[M] = {
+  override def persistSnapshot(snapshot: S, force: Boolean)(onPersisted: S => Behavior[M]): Behavior[M] = {
     ctx.log.debug("Persisting snapshot: {}", snapshot)
 
     // Determine whether to save based on force parameter or snapshot strategy

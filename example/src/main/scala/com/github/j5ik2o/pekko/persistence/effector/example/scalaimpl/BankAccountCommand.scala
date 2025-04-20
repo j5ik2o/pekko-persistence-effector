@@ -12,14 +12,8 @@ enum BankAccountCommand {
     limit: Money = Money(100000, Money.JPY),
     balance: Money = Money(0, Money.JPY),
     replyTo: ActorRef[CreateReply])
-  case DepositCash(
-    override val aggregateId: BankAccountId,
-    amount: Money,
-    replyTo: ActorRef[DepositCashReply])
-  case WithdrawCash(
-    override val aggregateId: BankAccountId,
-    amount: Money,
-    replyTo: ActorRef[WithdrawCashReply])
+  case DepositCash(override val aggregateId: BankAccountId, amount: Money, replyTo: ActorRef[DepositCashReply])
+  case WithdrawCash(override val aggregateId: BankAccountId, amount: Money, replyTo: ActorRef[WithdrawCashReply])
 
   def aggregateId: BankAccountId = this match {
     case GetBalance(aggregateId, _) => aggregateId

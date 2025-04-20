@@ -1,8 +1,7 @@
 package com.github.j5ik2o.pekko.persistence.effector.scaladsl
 
 /**
- * Trait defining snapshot strategy. Represents conditions for determining whether a snapshot should
- * be taken
+ * Trait defining snapshot strategy. Represents conditions for determining whether a snapshot should be taken
  */
 sealed trait SnapshotCriteria[S, E] {
 
@@ -60,8 +59,7 @@ object SnapshotCriteria {
    * @param criteria
    *   List of conditions
    * @param requireAll
-   *   If true, all conditions must be met (AND condition), if false, any condition can be met (OR
-   *   condition)
+   *   If true, all conditions must be met (AND condition), if false, any condition can be met (OR condition)
    */
   final case class Combined[S, E](
     criteria: Seq[SnapshotCriteria[S, E]],

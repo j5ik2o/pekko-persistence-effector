@@ -14,8 +14,7 @@ import java.util.UUID
 import _root_.scala.concurrent.duration.*
 
 /**
- * Base test class for BankAccountAggregate. Specific mode (Persisted/InMemory) is specified in
- * subclasses
+ * Base test class for BankAccountAggregate. Specific mode (Persisted/InMemory) is specified in subclasses
  */
 abstract class BankAccountAggregateTestBase
   extends ScalaTestWithActorTestKit(TestConfig.config)
@@ -74,10 +73,7 @@ abstract class BankAccountAggregateTestBase
       for { _ <- 1 to 10 } {
         // Deposit
         val depositAmount = Money.of(JavaBigDecimal.valueOf(10000), Money.JPY)
-        bankAccountActor ! BankAccountCommand.DepositCash(
-          accountId,
-          depositAmount,
-          depositProbe.ref)
+        bankAccountActor ! BankAccountCommand.DepositCash(accountId, depositAmount, depositProbe.ref)
 
         val depositResponse = depositProbe.expectMessageType[CommandReply.DepositCashReply]
         depositResponse shouldBe CommandReply.DepositCashReply.succeeded(accountId, depositAmount)
@@ -119,10 +115,7 @@ abstract class BankAccountAggregateTestBase
       // Withdraw
       val withdrawAmount = Money.of(JavaBigDecimal.valueOf(3000), Money.JPY)
       val withdrawProbe = createTestProbe[CommandReply.WithdrawCashReply]()
-      bankAccountActor ! BankAccountCommand.WithdrawCash(
-        accountId,
-        withdrawAmount,
-        withdrawProbe.ref)
+      bankAccountActor ! BankAccountCommand.WithdrawCash(accountId, withdrawAmount, withdrawProbe.ref)
 
       val withdrawResponse = withdrawProbe.expectMessageType[CommandReply.WithdrawCashReply]
       withdrawResponse.getAggregateId shouldBe accountId
@@ -168,10 +161,7 @@ abstract class BankAccountAggregateTestBase
       // Attempt to withdraw more than the deposit amount
       val withdrawAmount = Money.of(JavaBigDecimal.valueOf(1000), Money.JPY)
       val withdrawProbe = createTestProbe[CommandReply.WithdrawCashReply]()
-      bankAccountActor ! BankAccountCommand.WithdrawCash(
-        accountId,
-        withdrawAmount,
-        withdrawProbe.ref)
+      bankAccountActor ! BankAccountCommand.WithdrawCash(accountId, withdrawAmount, withdrawProbe.ref)
 
       val failedResponse = withdrawProbe.expectMessageType[CommandReply.WithdrawCashReply]
       failedResponse.getAggregateId shouldBe accountId
@@ -219,10 +209,7 @@ abstract class BankAccountAggregateTestBase
       // Deposit again
       val depositAmount2 = Money.of(JavaBigDecimal.valueOf(20000), Money.JPY)
       val depositProbe2 = createTestProbe[CommandReply.DepositCashReply]()
-      bankAccountActor1 ! BankAccountCommand.DepositCash(
-        accountId,
-        depositAmount2,
-        depositProbe2.ref)
+      bankAccountActor1 ! BankAccountCommand.DepositCash(accountId, depositAmount2, depositProbe2.ref)
       depositProbe2.expectMessageType[CommandReply.DepositCashReply]
 
       // Explicitly stop to create a snapshot
@@ -244,10 +231,7 @@ abstract class BankAccountAggregateTestBase
       // Verify that operations can be performed normally after actor restart
       val withdrawAmount = Money.of(JavaBigDecimal.valueOf(10000), Money.JPY)
       val withdrawProbe = createTestProbe[CommandReply.WithdrawCashReply]()
-      bankAccountActor2 ! BankAccountCommand.WithdrawCash(
-        accountId,
-        withdrawAmount,
-        withdrawProbe.ref)
+      bankAccountActor2 ! BankAccountCommand.WithdrawCash(accountId, withdrawAmount, withdrawProbe.ref)
 
       val withdrawResponse = withdrawProbe.expectMessageType[CommandReply.WithdrawCashReply]
       withdrawResponse.getAmount shouldBe withdrawAmount

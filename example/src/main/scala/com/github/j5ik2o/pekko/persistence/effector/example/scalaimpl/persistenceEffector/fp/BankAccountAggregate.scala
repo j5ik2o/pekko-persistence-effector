@@ -44,15 +44,14 @@ object BankAccountAggregate {
     state: BankAccountAggregateState.NotCreated,
     effector: PersistenceEffector[BankAccountAggregateState, BankAccountEvent, BankAccountCommand])
     : Behavior[BankAccountCommand] =
-    Behaviors.receiveMessagePartial {
-      case BankAccountCommand.Create(aggregateId, limit, balance, replyTo) =>
-        val Result(bankAccount, event) = BankAccount.create(aggregateId, limit, balance)
-        effector.persistEvent(event) { _ =>
-          replyTo ! CreateReply.Succeeded(aggregateId)
-          val newState: BankAccountAggregateState.Created =
-            BankAccountAggregateState.Created(state.aggregateId, bankAccount)
-          handleCreated(newState, effector)
-        }
+    Behaviors.receiveMessagePartial { case BankAccountCommand.Create(aggregateId, limit, balance, replyTo) =>
+      val Result(bankAccount, event) = BankAccount.create(aggregateId, limit, balance)
+      effector.persistEvent(event) { _ =>
+        replyTo ! CreateReply.Succeeded(aggregateId)
+        val newState: BankAccountAggregateState.Created =
+          BankAccountAggregateState.Created(state.aggregateId, bankAccount)
+        handleCreated(newState, effector)
+      }
     }
 
   private def handleCreated(

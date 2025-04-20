@@ -15,9 +15,7 @@ import _root_.scala.math.BigDecimal
  * @param currency
  *   Currency unit [[java.util.Currency]]
  */
-class Money(private val amount: BigDecimal, private val currency: Currency)
-  extends Ordered[Money]
-  with Serializable {
+class Money(private val amount: BigDecimal, private val currency: Currency) extends Ordered[Money] with Serializable {
 
   require(
     amount.scale == currency.getDefaultFractionDigits,
@@ -39,8 +37,8 @@ class Money(private val amount: BigDecimal, private val currency: Currency)
   override def hashCode: Int = 31 * (amount.hashCode + currency.hashCode)
 
   /**
-   * Returns a [[org.sisioh.baseunits.scala.money.Money]] whose amount is the absolute amount of
-   * this [[org.sisioh.baseunits.scala.money.Money]], and whose scale is this.scale().
+   * Returns a [[org.sisioh.baseunits.scala.money.Money]] whose amount is the absolute amount of this
+   * [[org.sisioh.baseunits.scala.money.Money]], and whose scale is this.scale().
    *
    * @return
    *   Absolute amount
@@ -50,12 +48,10 @@ class Money(private val amount: BigDecimal, private val currency: Currency)
   /**
    * Compare amounts with each other.
    *
-   * The one with relatively smaller amount is judged as "smaller". If the currency units are
-   * different, [[java.lang.ClassCastException]] will be thrown, but if either amount is `0`, no
-   * exception will be thrown.
+   * The one with relatively smaller amount is judged as "smaller". If the currency units are different,
+   * [[java.lang.ClassCastException]] will be thrown, but if either amount is `0`, no exception will be thrown.
    *
-   * For example, `10 USD` and `0 JPY`, the latter is smaller. Also, `0 USD` and `0 JPY` are the
-   * same.
+   * For example, `10 USD` and `0 JPY`, the latter is smaller. Also, `0 USD` and `0 JPY` are the same.
    *
    * @param that
    *   Comparison target
@@ -84,13 +80,11 @@ class Money(private val amount: BigDecimal, private val currency: Currency)
   /**
    * Returns the `amount` field (quantity) of this object.
    *
-   * CAUTION: This method exposes elements that this object encapsulates. Handle with sufficient
-   * care.
+   * CAUTION: This method exposes elements that this object encapsulates. Handle with sufficient care.
    *
-   * How best to handle access to the internals? It is needed for database mapping, UI presentation,
-   * and perhaps a few other uses. Yet giving public access invites people to do the real work of
-   * the Money object elsewhere. Here is an experimental approach, giving access with a warning
-   * label of sorts. Let us know how you like it.
+   * How best to handle access to the internals? It is needed for database mapping, UI presentation, and perhaps a few
+   * other uses. Yet giving public access invites people to do the real work of the Money object elsewhere. Here is an
+   * experimental approach, giving access with a warning label of sorts. Let us know how you like it.
    *
    * @return
    *   Amount
@@ -100,8 +94,7 @@ class Money(private val amount: BigDecimal, private val currency: Currency)
   /**
    * Returns the `currency` field (currency unit) of this object.
    *
-   * CAUTION: This method exposes elements that this object encapsulates. Handle with sufficient
-   * care.
+   * CAUTION: This method exposes elements that this object encapsulates. Handle with sufficient care.
    *
    * @return
    *   Currency unit
@@ -249,10 +242,10 @@ class Money(private val amount: BigDecimal, private val currency: Currency)
    *
    * Applies rounding mode `RoundingMode#HALF_EVEN`.
    *
-   * TODO: Many apps require carrying extra precision in intermediate calculations. The use of Ratio
-   * is a beginning, but need a comprehensive solution. Currently, an invariant of Money is that the
-   * scale is the currencies standard scale, but this will probably have to be suspended or
-   * elaborated in intermediate calcs, or handled with defered calculations like Ratio.
+   * TODO: Many apps require carrying extra precision in intermediate calculations. The use of Ratio is a beginning, but
+   * need a comprehensive solution. Currently, an invariant of Money is that the scale is the currencies standard scale,
+   * but this will probably have to be suspended or elaborated in intermediate calcs, or handled with defered
+   * calculations like Ratio.
    *
    * @param factor
    *   Coefficient
@@ -265,8 +258,7 @@ class Money(private val amount: BigDecimal, private val currency: Currency)
   /**
    * Returns the amount after multiplying this amount by `factor`.
    *
-   * TODO: BigDecimal.multiply() scale is sum of scales of two multiplied numbers. So what is scale
-   * of times?
+   * TODO: BigDecimal.multiply() scale is sum of scales of two multiplied numbers. So what is scale of times?
    *
    * @param factor
    *   Coefficient
@@ -342,8 +334,8 @@ class Money(private val amount: BigDecimal, private val currency: Currency)
       .equals(BigDecimal(0))
 
   /**
-   * Returns the amount after adding the minimum unit amount to this amount, i.e., an amount that is
-   * 1 step larger than this amount.
+   * Returns the amount after adding the minimum unit amount to this amount, i.e., an amount that is 1 step larger than
+   * this amount.
    *
    * @return
    *   An amount 1 step larger than this amount
@@ -355,9 +347,8 @@ class Money(private val amount: BigDecimal, private val currency: Currency)
    *
    * For example, Japanese yen is 1 yen, and US$ is 1 cent (i.e., 0.01 dollars).
    *
-   * This probably should be Currency responsibility. Even then, it may need to be customized for
-   * specialty apps because there are other cases, where the smallest increment is not the smallest
-   * unit.
+   * This probably should be Currency responsibility. Even then, it may need to be customized for specialty apps because
+   * there are other cases, where the smallest increment is not the smallest unit.
    *
    * @return
    *   Minimum unit amount
@@ -447,17 +438,17 @@ object Money {
   /**
    * Returns the total amount of all amounts contained in [[scala.Iterable]].
    *
-   * The currency unit of the total amount will be the (common) currency unit of the elements of
-   * `monies`, but if the `Collection` is empty, it returns an instance with an amount of 0 in the
-   * currency unit of the current default locale.
+   * The currency unit of the total amount will be the (common) currency unit of the elements of `monies`, but if the
+   * `Collection` is empty, it returns an instance with an amount of 0 in the currency unit of the current default
+   * locale.
    *
    * @param monies
    *   Collection of amounts
    * @return
    *   Total amount
    * @throws ClassCastException
-   *   If the argument contains currency units with different currency units. However, no exception
-   *   is thrown for amounts of 0 because currency units are not considered.
+   *   If the argument contains currency units with different currency units. However, no exception is thrown for
+   *   amounts of 0 because currency units are not considered.
    */
   def sum(monies: Iterable[Money]): Money =
     if (monies.isEmpty) {
@@ -491,10 +482,7 @@ object Money {
    * @return
    *   Amount
    */
-  def adjustBy(
-    rawAmount: BigDecimal,
-    currency: Currency,
-    roundingMode: BigDecimal.RoundingMode.Value): Money = {
+  def adjustBy(rawAmount: BigDecimal, currency: Currency, roundingMode: BigDecimal.RoundingMode.Value): Money = {
     val amount =
       rawAmount.setScale(currency.getDefaultFractionDigits, roundingMode)
     new Money(amount, currency)
@@ -514,8 +502,8 @@ object Money {
     adjustBy(dblAmount, currency, DefaultRoundingMode)
 
   /**
-   * Because of the indefinite precision of double, this method must round off the value. This
-   * method gives the client control of the rounding mode.
+   * Because of the indefinite precision of double, this method must round off the value. This method gives the client
+   * control of the rounding mode.
    *
    * @param dblAmount
    *   Amount
@@ -526,10 +514,7 @@ object Money {
    * @return
    *   Amount
    */
-  def adjustRound(
-    dblAmount: Double,
-    currency: Currency,
-    roundingMode: BigDecimal.RoundingMode.Value): Money = {
+  def adjustRound(dblAmount: Double, currency: Currency, roundingMode: BigDecimal.RoundingMode.Value): Money = {
     val rawAmount = BigDecimal(dblAmount)
     adjustBy(rawAmount, currency, roundingMode)
   }

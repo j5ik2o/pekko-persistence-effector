@@ -22,19 +22,16 @@ object BankAccountAggregate {
       handleNotCreated(BankAccountAggregateState.NotCreated(aggregateId))
     }
 
-  private def handleNotCreated(
-    state: BankAccountAggregateState.NotCreated): Behavior[BankAccountCommand] =
-    Behaviors.receiveMessagePartial {
-      case BankAccountCommand.Create(aggregateId, limit, balance, replyTo) =>
-        val Result(bankAccount, event) = BankAccount.create(aggregateId, limit, balance)
-        replyTo ! CreateReply.Succeeded(aggregateId)
-        val newState: BankAccountAggregateState.Created =
-          BankAccountAggregateState.Created(state.aggregateId, bankAccount)
-        handleCreated(newState)
+  private def handleNotCreated(state: BankAccountAggregateState.NotCreated): Behavior[BankAccountCommand] =
+    Behaviors.receiveMessagePartial { case BankAccountCommand.Create(aggregateId, limit, balance, replyTo) =>
+      val Result(bankAccount, event) = BankAccount.create(aggregateId, limit, balance)
+      replyTo ! CreateReply.Succeeded(aggregateId)
+      val newState: BankAccountAggregateState.Created =
+        BankAccountAggregateState.Created(state.aggregateId, bankAccount)
+      handleCreated(newState)
     }
 
-  private def handleCreated(
-    state: BankAccountAggregateState.Created): Behavior[BankAccountCommand] =
+  private def handleCreated(state: BankAccountAggregateState.Created): Behavior[BankAccountCommand] =
     Behaviors.receiveMessagePartial {
       case BankAccountCommand.Stop(aggregateId, replyTo) =>
         replyTo ! StopReply.Succeeded(aggregateId)

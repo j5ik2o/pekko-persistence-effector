@@ -9,8 +9,8 @@ import org.apache.pekko.actor.typed.Behavior
 import org.apache.pekko.actor.typed.scaladsl.{ActorContext, StashBuffer}
 
 /**
- * In-memory implementation of PersistenceEffector. This implementation stores events and snapshots
- * in memory, making it suitable for testing and scenarios where persistence is not required.
+ * In-memory implementation of PersistenceEffector. This implementation stores events and snapshots in memory, making it
+ * suitable for testing and scenarios where persistence is not required.
  *
  * @param ctx
  *   Actor context for the actor using this effector
@@ -135,8 +135,7 @@ private[effector] final class InMemoryEffector[S, E, M](
   }
 
   // Emulate the saveSnapshot method of PersistentActor
-  override def persistSnapshot(snapshot: S, force: Boolean)(
-    onPersisted: S => Behavior[M]): Behavior[M] = {
+  override def persistSnapshot(snapshot: S, force: Boolean)(onPersisted: S => Behavior[M]): Behavior[M] = {
     ctx.log.debug("In-memory persisting snapshot: {}", snapshot)
 
     // Determine whether to save based on force parameter or snapshot strategy

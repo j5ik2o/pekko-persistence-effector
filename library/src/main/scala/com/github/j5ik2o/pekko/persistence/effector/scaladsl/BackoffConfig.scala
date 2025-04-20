@@ -41,10 +41,7 @@ object BackoffConfig {
 
   final val Default: BackoffConfig = apply()
 
-  def apply(
-    minBackoff: FiniteDuration,
-    maxBackoff: FiniteDuration,
-    randomFactor: Double): BackoffConfig =
+  def apply(minBackoff: FiniteDuration, maxBackoff: FiniteDuration, randomFactor: Double): BackoffConfig =
     Impl(minBackoff, maxBackoff, randomFactor)
 
   def unapply(self: BackoffConfig): Option[(FiniteDuration, FiniteDuration, Double)] =
