@@ -1,8 +1,6 @@
 package com.github.j5ik2o.pekko.persistence.effector.example.javaimpl;
 
 import com.github.j5ik2o.pekko.persistence.effector.javadsl.DeletedSnapshots;
-import com.github.j5ik2o.pekko.persistence.effector.javadsl.MessageConverter;
-import com.github.j5ik2o.pekko.persistence.effector.javadsl.MessageProtocol;
 import com.github.j5ik2o.pekko.persistence.effector.javadsl.PersistedEvent;
 import com.github.j5ik2o.pekko.persistence.effector.javadsl.PersistedState;
 import com.github.j5ik2o.pekko.persistence.effector.javadsl.RecoveredState;
