@@ -294,14 +294,14 @@ This example demonstrates:
 For more detailed implementation examples, see the following files:
 
 **Scala DSL:**
-- Aggregate: [BankAccountAggregate.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/pe/BankAccountAggregate.scala)
-- Domain Model: [BankAccount.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/pe/BankAccount.scala)
+- Aggregate: [BankAccountAggregate.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/persistenceEffector/fp/BankAccountAggregate.scala)
+- Domain Model: [BankAccount.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/persistenceEffector/BankAccount.scala)
 - Commands: [BankAccountCommand.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccountCommand.scala)
 - Events: [BankAccountEvent.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccountEvent.scala)
 
 **Java DSL:**
-- Aggregate: [BankAccountAggregate.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/pe/BankAccountAggregate.java)
-- Domain Model: [BankAccount.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/pe/BankAccount.java)
+- Aggregate: [BankAccountAggregate.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/persistenceEffector/oop/BankAccountAggregate.java)
+- Domain Model: [BankAccount.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/persistenceEffector/oop/BankAccount.java)
 - Commands: [BankAccountCommand.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountCommand.java)
 - Events: [BankAccountEvent.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountEvent.java)
 

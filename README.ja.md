@@ -294,16 +294,16 @@ object BankAccountAggregate {
 より詳細な実装例については、以下のファイルを参照してください：
 
 **Scala DSL:**
-- 集約: [BankAccountAggregate.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/pe/BankAccountAggregate.scala)
-- ドメインモデル: [BankAccount.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/pe/BankAccount.scala)
-- コマンド: [BankAccountCommand.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccountCommand.scala)
-- イベント: [BankAccountEvent.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccountEvent.scala)
+- Aggregate: [BankAccountAggregate.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/persistenceEffector/fp/BankAccountAggregate.scala)
+- Domain Model: [BankAccount.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/persistenceEffector/BankAccount.scala)
+- Commands: [BankAccountCommand.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccountCommand.scala)
+- Events: [BankAccountEvent.scala](example/src/main/scala/com/github/j5ik2o/pekko/persistence/effector/example/scalaimpl/BankAccountEvent.scala)
 
 **Java DSL:**
-- 集約: [BankAccountAggregate.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/pe/BankAccountAggregate.java)
-- ドメインモデル: [BankAccount.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/pe/BankAccount.java)
-- コマンド: [BankAccountCommand.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountCommand.java)
-- イベント: [BankAccountEvent.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountEvent.java)
+- Aggregate: [BankAccountAggregate.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/persistenceEffector/oop/BankAccountAggregate.java)
+- Domain Model: [BankAccount.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/persistenceEffector/oop/BankAccount.java)
+- Commands: [BankAccountCommand.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountCommand.java)
+- Events: [BankAccountEvent.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountEvent.java)
 
 ## このライブラリを使用するシーン
 
