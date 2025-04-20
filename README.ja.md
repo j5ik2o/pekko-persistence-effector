@@ -287,7 +287,7 @@ object BankAccountAggregate {
 5. 状態固有のメッセージハンドラ
 6. ドメインバリデーションと永続化失敗の両方に対するエラー処理
 
-*(Java DSL の例は `src/test/java` ディレクトリを参照してください)*
+*(Java DSL の例は [example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/persistenceEffector/oop](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/persistenceEffector/oop) ディレクトリを参照してください)*
 
 ## サンプルコードファイル
 
