@@ -33,12 +33,13 @@ public sealed interface BankAccountAggregateState extends Serializable {
 
     @Override
     public BankAccountAggregateState applyEvent(BankAccountEvent event) {
-      if (event instanceof BankAccountEvent.Created created) {
-        var result = BankAccount.create(aggregateId, created.limit(), created.balance());
-        return new Created(aggregateId, result.getState());
-      } else {
-        throw new IllegalStateException("Unexpected event: " + event);
-      }
+      return switch (event) {
+        case BankAccountEvent.Created created -> {
+          var result = BankAccount.create(aggregateId, created.limit(), created.balance());
+          yield new Created(aggregateId, result.getState());
+        }
+        default -> throw new IllegalStateException("Unexpected event: " + event);
+      };
     }
   }
 
@@ -57,23 +58,25 @@ public sealed interface BankAccountAggregateState extends Serializable {
 
     @Override
     public BankAccountAggregateState applyEvent(BankAccountEvent event) {
-      if (event instanceof BankAccountEvent.CashDeposited deposited) {
-        var result = bankAccount.add(deposited.amount());
-        if (result.isLeft()) {
-          throw new IllegalStateException("Failed to apply event: " + result.getLeft());
-        } else {
-          return new Created(aggregateId, result.getRight().getState());
+      return switch (event) {
+        case BankAccountEvent.CashDeposited deposited -> {
+          var result = bankAccount.add(deposited.amount());
+          if (result.isLeft()) {
+            throw new IllegalStateException("Failed to apply event: " + result.getLeft());
+          } else {
+            yield new Created(aggregateId, result.getRight().getState());
+          }
         }
-      } else if (event instanceof BankAccountEvent.CashWithdrew withdrew) {
-        var result = bankAccount.subtract(withdrew.amount());
-        if (result.isLeft()) {
-          throw new IllegalStateException("Failed to apply event: " + result.getLeft());
-        } else {
-          return new Created(aggregateId, result.getRight().getState());
+        case BankAccountEvent.CashWithdrew withdrew -> {
+          var result = bankAccount.subtract(withdrew.amount());
+          if (result.isLeft()) {
+            throw new IllegalStateException("Failed to apply event: " + result.getLeft());
+          } else {
+            yield new Created(aggregateId, result.getRight().getState());
+          }
         }
-      } else {
-        throw new IllegalStateException("Unexpected event: " + event);
-      }
+        default -> throw new IllegalStateException("Unexpected event: " + event);
+      };
     }
   }
 }

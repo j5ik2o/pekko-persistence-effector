@@ -63,7 +63,7 @@ val testSettings = Seq(
 
 // 共通設定
 val baseSettings = Seq(
-  javacOptions ++= Seq("-source", "17", "-target", "17"),
+  javacOptions ++= Seq("-source", "21", "-target", "21"),
   scalacOptions ++= Seq(
     "-encoding",
     "utf8",
