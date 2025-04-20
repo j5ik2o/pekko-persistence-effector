@@ -287,7 +287,7 @@ This example demonstrates:
 5. State-specific message handlers
 6. Error handling for both domain validation and persistence failures
 
-*(See Java DSL examples in the `example/` directory)*
+*(See Java DSL examples in the [example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/persistenceEffector/oop](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/persistenceEffector/oop) directory)*
 
 ## Example Code Files
 
