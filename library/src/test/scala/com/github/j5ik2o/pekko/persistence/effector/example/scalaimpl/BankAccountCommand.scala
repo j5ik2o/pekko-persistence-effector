@@ -17,26 +17,12 @@ enum BankAccountCommand {
     amount: Money,
     replyTo: ActorRef[WithdrawCashReply])
 
-  private case StateRecovered(state: BankAccountAggregate.State)
-    extends BankAccountCommand
-    with RecoveredState[BankAccountAggregate.State, BankAccountCommand]
-  private case EventPersisted(events: Seq[BankAccountEvent])
-    extends BankAccountCommand
-    with PersistedEvent[BankAccountEvent, BankAccountCommand]
-  private case StatePersisted(state: BankAccountAggregate.State)
-    extends BankAccountCommand
-    with PersistedState[BankAccountAggregate.State, BankAccountCommand]
-  private case SnapshotShotsDeleted(maxSequenceNumber: Long)
-    extends BankAccountCommand
-    with DeletedSnapshots[BankAccountCommand]
-
   def aggregateId: BankAccountId = this match {
     case GetBalance(aggregateId, _) => aggregateId
     case Stop(aggregateId, _) => aggregateId
     case Create(aggregateId, _) => aggregateId
     case DepositCash(aggregateId, _, _) => aggregateId
     case WithdrawCash(aggregateId, _, _) => aggregateId
-    case StateRecovered(state) => state.aggregateId
     case _ =>
       throw new UnsupportedOperationException(
         "EventPersisted or StatePersisted or SnapshotShotsDeleted does not have aggregateId")
