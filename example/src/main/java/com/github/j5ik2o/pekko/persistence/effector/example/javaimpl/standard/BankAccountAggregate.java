@@ -6,10 +6,7 @@ import org.apache.pekko.actor.typed.Behavior;
 import org.apache.pekko.actor.typed.javadsl.ActorContext;
 import org.apache.pekko.actor.typed.javadsl.Behaviors;
 import org.apache.pekko.persistence.typed.PersistenceId;
-import org.apache.pekko.persistence.typed.javadsl.CommandHandlerWithReply;
-import org.apache.pekko.persistence.typed.javadsl.EventHandler;
-import org.apache.pekko.persistence.typed.javadsl.EventSourcedBehaviorWithEnforcedReplies;
-import org.apache.pekko.persistence.typed.javadsl.ReplyEffect;
+import org.apache.pekko.persistence.typed.javadsl.*;
 
 /** Bank Account Aggregate */
 public class BankAccountAggregate
@@ -53,6 +50,19 @@ public class BankAccountAggregate
   @Override
   public BankAccountAggregateState emptyState() {
     return new BankAccountAggregateState.NotCreated(aggregateId);
+  }
+
+  @Override
+  public RetentionCriteria retentionCriteria() {
+    return RetentionCriteria.snapshotEvery(2, 2);
+  }
+
+  @Override
+  public boolean shouldSnapshot(
+      BankAccountAggregateState bankAccountAggregateState,
+      BankAccountEvent bankAccountEvent,
+      long sequenceNr) {
+    return sequenceNr % 2 == 0;
   }
 
   @Override

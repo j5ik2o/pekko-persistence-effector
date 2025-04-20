@@ -1,4 +1,4 @@
-package com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl
+package com.github.j5ik2o.pekko.persistence.effector.example
 
 import com.typesafe.config.{Config, ConfigFactory}
 

@@ -32,6 +32,14 @@ public sealed interface CommandReply extends Serializable {
       return aggregateId;
     }
 
+    public Money getBalance() {
+      return balance;
+    }
+
+    public BankAccountError getError() {
+      return error;
+    }
+
     @Override
     public boolean isSuccessful() {
       return error == null;
@@ -152,6 +160,14 @@ public sealed interface CommandReply extends Serializable {
       return aggregateId;
     }
 
+    public Money getAmount() {
+      return amount;
+    }
+
+    public BankAccountError getError() {
+      return error;
+    }
+
     @Override
     public boolean isSuccessful() {
       return error == null;
@@ -192,6 +208,14 @@ public sealed interface CommandReply extends Serializable {
     @Override
     public BankAccountId getAggregateId() {
       return aggregateId;
+    }
+
+    public Money getAmount() {
+      return amount;
+    }
+
+    public BankAccountError getError() {
+      return error;
     }
 
     @Override

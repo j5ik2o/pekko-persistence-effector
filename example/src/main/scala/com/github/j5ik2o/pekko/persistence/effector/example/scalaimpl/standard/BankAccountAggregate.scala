@@ -13,7 +13,12 @@ import com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.{
 }
 import org.apache.pekko.actor.typed.Behavior
 import org.apache.pekko.persistence.typed.PersistenceId
-import org.apache.pekko.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect}
+import org.apache.pekko.persistence.typed.scaladsl.{
+  Effect,
+  EventSourcedBehavior,
+  ReplyEffect,
+  RetentionCriteria,
+}
 
 import java.time.Instant
 
@@ -26,6 +31,8 @@ object BankAccountAggregate {
         commandHandler = commandHandler,
         eventHandler = eventHandler,
       )
+      .withRetention(RetentionCriteria.snapshotEvery(2, 2))
+      .snapshotWhen((_, _, seqNr) => seqNr % 2 == 0)
       .withTagger(_ => Set(id.aggregateTypeName))
 
   private def eventHandler

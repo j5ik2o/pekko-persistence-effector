@@ -1,9 +1,10 @@
 package com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.standard;
 
 import com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.BankAccountId;
+import java.io.Serializable;
 
 /** Sealed interface representing the state of a bank account */
-public sealed interface BankAccountAggregateState {
+public sealed interface BankAccountAggregateState extends Serializable {
   /**
    * Get the aggregate ID
    *

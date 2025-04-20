@@ -1,6 +1,12 @@
-package com.github.j5ik2o.pekko.persistence.effector.example.javaimpl
+package com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.standard
 
+import com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.{
+  BankAccountAggregateTestBase,
+  BankAccountCommand,
+  BankAccountId,
+}
 import com.github.j5ik2o.pekko.persistence.effector.javadsl.PersistenceMode
+import org.apache.pekko.actor.typed.Behavior
 
 import java.io.File
 
@@ -9,6 +15,9 @@ import java.io.File
  */
 class BankAccountAggregateSpec extends BankAccountAggregateTestBase {
   override def persistenceMode: PersistenceMode = PersistenceMode.PERSISTENCE
+
+  override def createBankAccountAggregate(accountId: BankAccountId): Behavior[BankAccountCommand] =
+    BankAccountAggregate.create(accountId)
 
   // Ensure LevelDB storage directories are created before testing
   override def beforeAll(): Unit = {
