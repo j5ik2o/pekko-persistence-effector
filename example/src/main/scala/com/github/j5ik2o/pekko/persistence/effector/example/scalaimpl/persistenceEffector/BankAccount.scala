@@ -1,4 +1,4 @@
-package com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.pe
+package com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.persistenceEffector
 
 import com.github.j5ik2o.pekko.persistence.effector.example.*
 import com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.*

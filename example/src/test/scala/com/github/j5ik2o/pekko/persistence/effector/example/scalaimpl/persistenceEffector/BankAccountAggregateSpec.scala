@@ -1,11 +1,12 @@
-package com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.pe
+package com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.persistenceEffector
 
-import com.github.j5ik2o.pekko.persistence.effector.example.javaimpl.{
+import com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.{
+  pe,
   BankAccountAggregateTestBase,
   BankAccountCommand,
   BankAccountId,
 }
-import com.github.j5ik2o.pekko.persistence.effector.javadsl.PersistenceMode
+import com.github.j5ik2o.pekko.persistence.effector.scaladsl.PersistenceMode
 import org.apache.pekko.actor.typed.Behavior
 
 import java.io.File
@@ -14,12 +15,11 @@ import java.io.File
  * Test for BankAccountAggregate using Persisted mode
  */
 class BankAccountAggregateSpec extends BankAccountAggregateTestBase {
-  override def persistenceMode: PersistenceMode = PersistenceMode.PERSISTENCE
-
+  override def persistenceMode: PersistenceMode = PersistenceMode.Persisted
   override def createBankAccountAggregate(accountId: BankAccountId): Behavior[BankAccountCommand] =
-    BankAccountAggregate.create(accountId, persistenceMode)
+    BankAccountAggregate(accountId, persistenceMode)
 
-  // Ensure LevelDB storage directories are created before testing
+  // Ensure LevelDB storage directory is created before testing
   override def beforeAll(): Unit = {
     val journalDir = new File("target/journal")
     val snapshotDir = new File("target/snapshot")
@@ -35,7 +35,7 @@ class BankAccountAggregateSpec extends BankAccountAggregateTestBase {
     super.beforeAll()
   }
 
-  // Clean up directories after testing
+  // Clean up directory after testing
   override def afterAll(): Unit =
     super.afterAll()
 
