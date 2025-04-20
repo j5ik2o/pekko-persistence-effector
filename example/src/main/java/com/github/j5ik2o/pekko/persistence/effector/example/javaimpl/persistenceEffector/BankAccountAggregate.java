@@ -99,7 +99,7 @@ public class BankAccountAggregate {
                       case BankAccountCommand.Stop stop -> {
                         stop.replyTo()
                             .tell(CommandReply.StopReply.succeeded(stop.getAggregateId()));
-                        yield Behaviors.stopped();
+                        yield Behaviors.<BankAccountCommand>stopped();
                       }
                       case BankAccountCommand.GetBalance getBalance -> {
                         getBalance
@@ -107,7 +107,7 @@ public class BankAccountAggregate {
                             .tell(
                                 CommandReply.GetBalanceReply.succeeded(
                                     getBalance.getAggregateId(), state.bankAccount().getBalance()));
-                        yield Behaviors.same();
+                        yield Behaviors.<BankAccountCommand>same();
                       }
                       case BankAccountCommand.DepositCash depositCash -> {
                         var result = state.bankAccount().add(depositCash.amount());
@@ -117,7 +117,7 @@ public class BankAccountAggregate {
                               .tell(
                                   CommandReply.DepositCashReply.failed(
                                       depositCash.getAggregateId(), result.getLeft()));
-                          yield Behaviors.same();
+                          yield Behaviors.<BankAccountCommand>same();
                         } else {
                           var newBankAccount = result.getRight();
                           yield effector.persistEvent(
@@ -143,7 +143,7 @@ public class BankAccountAggregate {
                               .tell(
                                   CommandReply.WithdrawCashReply.failed(
                                       withdrawCash.getAggregateId(), result.getLeft()));
-                          yield Behaviors.same();
+                          yield Behaviors.<BankAccountCommand>same();
                         } else {
                           var newBankAccount = result.getRight();
                           yield effector.persistEvent(
