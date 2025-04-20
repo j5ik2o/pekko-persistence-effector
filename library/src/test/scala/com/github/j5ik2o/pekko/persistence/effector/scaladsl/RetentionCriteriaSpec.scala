@@ -81,7 +81,7 @@ class RetentionCriteriaSpec extends AnyWordSpec with Matchers {
     }
 
     "use retentionCriteria.snapshotEvery factory method" in {
-      val criteria = RetentionCriteria.snapshotEvery(10, 2)
+      val criteria = RetentionCriteria.snapshotEvery(10)
       criteria.snapshotEvery shouldBe Some(10)
       criteria.keepNSnapshots shouldBe Some(2)
     }
@@ -94,7 +94,7 @@ class RetentionCriteriaSpec extends AnyWordSpec with Matchers {
 
     "throw exception on invalid parameters" in {
       an[IllegalArgumentException] should be thrownBy
-        RetentionCriteria.snapshotEvery(0, 2)
+        RetentionCriteria.snapshotEvery(0)
 
       an[IllegalArgumentException] should be thrownBy
         RetentionCriteria.snapshotEvery(10, 0)
