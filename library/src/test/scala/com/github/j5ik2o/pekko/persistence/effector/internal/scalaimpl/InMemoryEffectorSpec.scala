@@ -20,7 +20,7 @@ class InMemoryEffectorSpec extends PersistenceEffectorTestBase {
   override def runSnapshotTests: Boolean = true
 
   // Tests specific to InMemory mode
-  s"Effector with ${persistenceMode} mode" should {
+  s"Effector with $persistenceMode mode" should {
     "provide access to current state via getState" in {
       val persistenceId = s"test-get-state-${util.UUID.randomUUID()}"
       val initialState = TestState()

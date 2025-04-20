@@ -34,7 +34,7 @@ abstract class BankAccountAggregateTestBase
   def createBankAccountAggregate(accountId: BankAccountId): Behavior[BankAccountCommand] =
     BankAccountAggregate(accountId, persistenceMode)
 
-  s"BankAccountAggregate with ${persistenceMode} mode" should {
+  s"BankAccountAggregate with $persistenceMode mode" should {
     "create a new bank account successfully" in {
       val accountId = BankAccountId(UUID.randomUUID())
 
