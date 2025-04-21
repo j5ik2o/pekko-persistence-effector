@@ -2,11 +2,10 @@ name: Publish
 
 on:
   push:
-    tags:      # ← v1.2.3 のようなタグならリリース
+    tags:
       - 'v*'
-    branches:  # ← main なら SNAPSHOT
+    branches:
       - main
-
 jobs:
   build:
     runs-on: ubuntu-latest
