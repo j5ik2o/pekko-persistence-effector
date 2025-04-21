@@ -30,8 +30,12 @@ val publishSettings = Seq(
       Some(
         "snapshots" at "https://central.sonatype.com/repository/maven-snapshots/",
       ) // :contentReference[oaicite:0]{index=0}
-    else // (= タグ付きリリース)
-      None // 後で CI が file:./bundle に上書き
+    else {
+      if (sys.props.get("bundlePublish").contains("true"))
+        Some(Resolver.file("bundle", file("central-bundle")))
+      else
+        sonatypePublishTo.value
+    }
   },
   credentials += Credentials(
     "Sonatype Nexus Repository Manager",
