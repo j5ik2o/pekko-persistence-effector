@@ -41,10 +41,9 @@ jobs:
           rm -rf central-bundle
 
           # ---- ① ここを ThisBuild / publishTo に変更 ----
-          sbt "
-            set ThisBuild / publishTo := Some(\"local\" at \"file:./central-bundle\")
-            ; +publishSigned
-          "
+          sbt \
+            'set every publishTo := Some("local" at "file:./central-bundle")' \
+            '+publishSigned'
 
           (cd central-bundle && zip -rq ../central-bundle.zip .)
 
