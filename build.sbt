@@ -20,16 +20,14 @@ ThisBuild / scmInfo := Some(
   ),
 )
 
-// publish設定（libraryモジュールに移動）
 val publishSettings = Seq(
   publishMavenStyle := true,
   pomIncludeRepository := (_ => false),
   dynverSonatypeSnapshots := true,
+  dynverSeparator := "-",
   publishTo := {
     if (isSnapshot.value)
-      Some(
-        "snapshots" at "https://central.sonatype.com/repository/maven-snapshots/",
-      ) // :contentReference[oaicite:0]{index=0}
+      Some("snapshots" at "https://central.sonatype.com/repository/maven-snapshots/")
     else
       None
   },
