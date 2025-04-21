@@ -24,6 +24,7 @@ ThisBuild / scmInfo := Some(
 val publishSettings = Seq(
   publishMavenStyle := true,
   ThisBuild / pomIncludeRepository := (_ => false),
+  ThisBuild / dynverSonatypeSnapshots := true,
   publishTo := {
     if (isSnapshot.value)
       Some(
