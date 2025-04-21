@@ -39,8 +39,6 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           rm -rf central-bundle
-
-          # ---- ① ここを ThisBuild / publishTo に変更 ----
           sbt \
             'set every publishTo := {
               val dir = baseDirectory.value / "central-bundle"
@@ -49,8 +47,7 @@ jobs:
             '+publishSigned'
 
           (cd central-bundle && zip -rq ../central-bundle.zip .)
-
-          # ---- ② Authorization は Basic ----
+          
           BASIC=$(printf '%s:%s' "$SONATYPE_USERNAME" "$SONATYPE_PASSWORD" | base64)
           curl -f -X POST \
             -H "Authorization: Basic $BASIC" \
