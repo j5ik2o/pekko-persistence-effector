@@ -32,6 +32,12 @@ val publishSettings = Seq(
     else // (= タグ付きリリース)
       None // 後で CI が file:./bundle に上書き
   },
+  credentials += Credentials(
+    "Sonatype Nexus Repository Manager",
+    "central.sonatype.com",
+    sys.env.getOrElse("SONATYPE_USERNAME", ""),
+    sys.env.getOrElse("SONATYPE_PASSWORD", ""),
+  ),
 )
 
 val testSettings = Seq(
