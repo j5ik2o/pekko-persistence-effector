@@ -361,11 +361,8 @@ object BankAccountAggregate {
 `build.sbt` に以下を追加してください：
 
 ```scala
-resolvers += "GitHub Packages" at
-  "https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector"
-
 libraryDependencies ++= Seq(
-  "com.github.j5ik2o" %% "pekko-persistence-effector" % "<最新バージョン>"
+  "io.github.j5ik2o" % "pekko-persistence-effector_3" % "<最新バージョン>"
 )
 ```
 
@@ -374,55 +371,30 @@ libraryDependencies ++= Seq(
 `build.gradle` に以下を追加してください：
 
 ```groovy
-repositories {
-    maven {
-        url = uri("https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector")
-    }
-}
-
 dependencies {
-    implementation 'com.github.j5ik2o:pekko-persistence-effector_3:<最新バージョン>'
+  implementation 'io.github.j5ik2o:pekko-persistence-effector_3:<最新バージョン>'
 }
 ```
 
 Kotlin DSL (`build.gradle.kts`) の場合：
 
 ```kotlin
-repositories {
-    maven {
-        url = uri("https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector")
-    }
-}
-
 dependencies {
-    implementation("com.github.j5ik2o:pekko-persistence-effector_3:<最新バージョン>")
+  implementation("io.github.j5ik2o:pekko-persistence-effector_3:<最新バージョン>")
 }
 ```
 
 ### Maven
 
-Maven (`pom.xml`) の場合：
+`pom.xml` に以下を追加してください：
 
 ```xml
-<repositories>
-  <repository>
-    <id>github</id>
-    <url>https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector</url>
-    <snapshots>
-      <enabled>true</enabled>
-    </snapshots>
-  </repository>
-</repositories>
-
-<dependencies>
-  <dependency>
-    <groupId>com.github.j5ik2o</groupId>
-    <artifactId>pekko-persistence-effector_3</artifactId>
-    <version>LATEST</version> <!-- 特定のバージョンに置き換えてください -->
-  </dependency>
-</dependencies>
+<dependency>
+  <groupId>io.github.j5ik2o</groupId>
+  <artifactId>pekko-persistence-effector_3</artifactId>
+  <version>LATEST</version>
+</dependency>
 ```
-
 
 ## ライセンス
 

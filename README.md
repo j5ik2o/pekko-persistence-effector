@@ -361,11 +361,8 @@ Note: This library does not depend on `pekko-persistence-typed`. You can use thi
 Add the following to your `build.sbt`:
 
 ```scala
-resolvers += "GitHub Packages" at
-  "https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector"
-
 libraryDependencies ++= Seq(
-  "com.github.j5ik2o" %% "pekko-persistence-effector" % "<latest_version>"
+  "io.github.j5ik2o" % "pekko-persistence-effector_3" % "<latest_version>"
 )
 ```
 
@@ -374,28 +371,16 @@ libraryDependencies ++= Seq(
 Add the following to your `build.gradle`:
 
 ```groovy
-repositories {
-    maven {
-        url = uri("https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector")
-    }
-}
-
 dependencies {
-    implementation 'com.github.j5ik2o:pekko-persistence-effector_3:<latest_version>'
+  implementation 'io.github.j5ik2o:pekko-persistence-effector_3:<latest_version>'
 }
 ```
 
 For Kotlin DSL (`build.gradle.kts`):
 
 ```kotlin
-repositories {
-    maven {
-        url = uri("https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector")
-    }
-}
-
 dependencies {
-    implementation("com.github.j5ik2o:pekko-persistence-effector_3:<latest_version>")
+  implementation("io.github.j5ik2o:pekko-persistence-effector_3:<latest_version>")
 }
 ```
 
@@ -404,26 +389,12 @@ dependencies {
 Add the following to your `pom.xml`:
 
 ```xml
-<repositories>
-  <repository>
-    <id>github</id>
-    <url>https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector</url>
-    <snapshots>
-      <enabled>true</enabled>
-    </snapshots>
-  </repository>
-</repositories>
-
-<dependencies>
-  <dependency>
-    <groupId>com.github.j5ik2o</groupId>
-    <artifactId>pekko-persistence-effector_3</artifactId>
-    <version>LATEST</version> <!-- Replace with specific version -->
-  </dependency>
-</dependencies>
+<dependency>
+  <groupId>io.github.j5ik2o</groupId>
+  <artifactId>pekko-persistence-effector_3</artifactId>
+  <version>LATEST</version>
+</dependency>
 ```
-
-
 
 ## License
 
