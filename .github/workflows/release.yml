@@ -2,9 +2,9 @@ name: Publish
 
 on:
   push:
-    tags:      # リリース用タグ
-      - 'v*'   # 例: v1.0.0
-    branches:  # 開発ブランチ (SNAPSHOT 用)
+    tags:      # ← v1.2.3 のようなタグならリリース
+      - 'v*'
+    branches:  # ← main なら SNAPSHOT
       - main
 
 jobs:
@@ -18,17 +18,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0     # sbt‑dynver がタグを参照できるように
+          fetch-depth: 0           # sbt-dynver がタグを参照できるように
 
       - uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 21
           cache: sbt
+
       - uses: sbt/setup-sbt@v1
 
-      # ── GPG 鍵をインポート ──
-      - name: Import key
+      # ── GPG 秘密鍵を導入 ───────────────────────
+      - name: Import GPG key
         run: |
           echo "${{ secrets.PGP_SECRET }}" | base64 -d > key.asc
           gpg --batch --import key.asc
@@ -38,17 +39,23 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           rm -rf central-bundle
-          sbt \
-            "set publishTo := Some(\"local\" at \"file:./central-bundle\")" \
-            +publishSigned
-          (cd central-bundle && zip -r ../central-bundle.zip .)
-          TOKEN=$(printf '%s:%s' "$SONATYPE_USERNAME" "$SONATYPE_PASSWORD" | base64)
+
+          # ---- ① ここを ThisBuild / publishTo に変更 ----
+          sbt "
+            set ThisBuild / publishTo := Some(\"local\" at \"file:./central-bundle\")
+            ; +publishSigned
+          "
+
+          (cd central-bundle && zip -rq ../central-bundle.zip .)
+
+          # ---- ② Authorization は Basic ----
+          BASIC=$(printf '%s:%s' "$SONATYPE_USERNAME" "$SONATYPE_PASSWORD" | base64)
           curl -f -X POST \
-            -H "Authorization: Bearer $TOKEN" \
+            -H "Authorization: Basic $BASIC" \
             -F bundle=@central-bundle.zip \
             "https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC"
 
-      # ───────── SNAPSHOT (main ブランチ push 時) ─────────
+      # ───────── SNAPSHOT (main push 時) ─────────
       - name: Publish SNAPSHOT
         if: github.ref == 'refs/heads/main'
-        run: sbt +publishSigned     # build.sbt の snapshots URL が使われる
+        run: sbt +publishSigned     # build.sbt 側の snapshots URL を利用
