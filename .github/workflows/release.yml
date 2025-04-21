@@ -51,6 +51,5 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           sbt \
-            'set every publishTo := Some("central-snapshots" at \
-              "https://central.sonatype.com/repository/maven-snapshots/")' \
+            'set every publishTo := Some("central-snapshots" at "https://central.sonatype.com/repository/maven-snapshots/")' \
             +publishSigned
