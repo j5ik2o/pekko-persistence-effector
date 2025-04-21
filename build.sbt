@@ -23,8 +23,8 @@ ThisBuild / scmInfo := Some(
 // publish設定（libraryモジュールに移動）
 val publishSettings = Seq(
   publishMavenStyle := true,
-  ThisBuild / pomIncludeRepository := (_ => false),
-  ThisBuild / dynverSonatypeSnapshots := true,
+  pomIncludeRepository := (_ => false),
+  dynverSonatypeSnapshots := true,
   publishTo := {
     if (isSnapshot.value)
       Some(
