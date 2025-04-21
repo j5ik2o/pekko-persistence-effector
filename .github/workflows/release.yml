@@ -1,32 +1,54 @@
-name: Release
+name: Publish
+
 on:
   push:
-    tags:
-      - v[0-9]+.[0-9]+.[0-9]+
+    tags:      # リリース用タグ
+      - 'v*'   # 例: v1.0.0
+    branches:  # 開発ブランチ (SNAPSHOT 用)
+      - main
+
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
     env:
-      JAVA_OPTS: -Xms2048M -Xmx2048M -Xss6M -XX:ReservedCodeCacheSize=256M -Dfile.encoding=UTF-8
-      JVM_OPTS:  -Xms2048M -Xmx2048M -Xss6M -XX:ReservedCodeCacheSize=256M -Dfile.encoding=UTF-8
-      AWS_JAVA_V1_DISABLE_DEPRECATION_ANNOUNCEMENT: true
-      GITHUB_ACTOR: j5ik2o
-      GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '21'
-        cache: 'sbt'
-    - uses: sbt/setup-sbt@v1
-    - name: publish
-      run: |
-        VERSION=${GITHUB_REF#refs/tags/}
-        VERSION=${VERSION#v}
-        echo "Publishing version=$VERSION"
+      SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+      SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      PGP_PASSPHRASE:    ${{ secrets.PGP_PASSPHRASE }}
 
-        sbt -v -Dsbt.log.noformat=true \
-          "set ThisBuild / version := \"${VERSION}\"; publish"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0     # sbt‑dynver がタグを参照できるように
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: sbt
+      - uses: sbt/setup-sbt@v1
+
+      # ── GPG 鍵をインポート ──
+      - name: Import key
+        run: |
+          echo "${{ secrets.PGP_SECRET }}" | base64 -d > key.asc
+          gpg --batch --import key.asc
+
+      # ──────────── リリース (タグ push 時) ────────────
+      - name: Build & upload bundle (release)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          rm -rf central-bundle
+          sbt \
+            "set publishTo := Some(\"local\" at \"file:./central-bundle\")" \
+            +publishSigned
+          (cd central-bundle && zip -r ../central-bundle.zip .)
+          TOKEN=$(printf '%s:%s' "$SONATYPE_USERNAME" "$SONATYPE_PASSWORD" | base64)
+          curl -f -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -F bundle=@central-bundle.zip \
+            "https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC"
+
+      # ───────── SNAPSHOT (main ブランチ push 時) ─────────
+      - name: Publish SNAPSHOT
+        if: github.ref == 'refs/heads/main'
+        run: sbt +publishSigned     # build.sbt の snapshots URL が使われる

@@ -1,8 +1,7 @@
 import Dependencies.*
-import com.google.googlejavaformat.java.JavaFormatterOptions
 
-ThisBuild / organization := "com.github.j5ik2o"
-ThisBuild / organizationName := "com.github.j5ik2o"
+ThisBuild / organization := "io.github.j5ik2o"
+ThisBuild / organizationName := "io.github.j5ik2o"
 ThisBuild / scalaVersion := "3.6.4"
 ThisBuild / homepage := Some(url("https://github.com/j5ik2o/pekko-persistence-effector"))
 ThisBuild / licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html"))
@@ -24,16 +23,15 @@ ThisBuild / scmInfo := Some(
 // publish設定（libraryモジュールに移動）
 val publishSettings = Seq(
   publishMavenStyle := true,
-  publishTo := Some(
-    "GitHub Package Registry" at
-      "https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector",
-  ),
-  credentials += Credentials(
-    "GitHub Package Registry",
-    "maven.pkg.github.com",
-    sys.env.getOrElse("GITHUB_ACTOR", ""),
-    sys.env.getOrElse("GITHUB_TOKEN", ""),
-  ),
+  ThisBuild / pomIncludeRepository := (_ => false),
+  publishTo := {
+    if (isSnapshot.value)
+      Some(
+        "snapshots" at "https://central.sonatype.com/repository/maven-snapshots/",
+      ) // :contentReference[oaicite:0]{index=0}
+    else // (= タグ付きリリース)
+      None // 後で CI が file:./bundle に上書き
+  },
 )
 
 val testSettings = Seq(
