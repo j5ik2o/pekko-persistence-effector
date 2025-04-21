@@ -1,11 +1,8 @@
-name: Publish
-
+name: release
 on:
   push:
-    tags:
-      - 'v*'
-    branches:
-      - main
+    tags:     [ 'v*' ]   # タグ付けリリース
+    branches: [ main ]   # SNAPSHOT
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,11 +10,9 @@ jobs:
       SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
       PGP_PASSPHRASE:    ${{ secrets.PGP_PASSPHRASE }}
-
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0           # sbt-dynver がタグを参照できるように
+        with: { fetch-depth: 0 }
 
       - uses: actions/setup-java@v3
         with:
@@ -27,33 +22,22 @@ jobs:
 
       - uses: sbt/setup-sbt@v1
 
-      # ── GPG 秘密鍵を導入 ───────────────────────
       - name: Import GPG key
         run: |
           echo "${{ secrets.PGP_SECRET }}" | base64 -d > key.asc
           gpg --batch --import key.asc
 
-      # ──────────── リリース (タグ push 時) ────────────
-      - name: Build & upload bundle (release)
+      - name: Publish release bundle
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          rm -rf central-bundle
-          sbt \
-            'set every publishTo := {
-              val dir = baseDirectory.value / "central-bundle"
-              Some("bundle" at s"file://${dir.getAbsolutePath}")
-            }' \
-            '+publishSigned'
-
-          (cd central-bundle && zip -rq ../central-bundle.zip .)
-          
+          sbt -DbundlePublish=true +publishSigned
+          zip -rq central-bundle-$(date +%Y%m%d)-${{ github.ref_name }}.zip central-bundle
           BASIC=$(printf '%s:%s' "$SONATYPE_USERNAME" "$SONATYPE_PASSWORD" | base64)
           curl -f -X POST \
             -H "Authorization: Basic $BASIC" \
-            -F bundle=@central-bundle.zip \
+            -F bundle=@central-bundle-*.zip \
             "https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC"
 
-      # ───────── SNAPSHOT (main push 時) ─────────
       - name: Publish SNAPSHOT
         if: github.ref == 'refs/heads/main'
-        run: sbt +publishSigned     # build.sbt 側の snapshots URL を利用
+        run: sbt +publishSigned

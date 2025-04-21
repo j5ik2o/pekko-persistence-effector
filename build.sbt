@@ -26,10 +26,18 @@ val publishSettings = Seq(
   dynverSonatypeSnapshots := true,
   dynverSeparator := "-",
   publishTo := {
-    if (isSnapshot.value)
-      Some("snapshots" at "https://central.sonatype.com/repository/maven-snapshots/")
-    else
-      None
+    val nexus = "https://s01.oss.sonatype.org/"
+    val snapshots = "snapshots" at nexus + "content/repositories/snapshots"
+    val releases = "releases" at nexus + "service/local/staging/deploy/maven2"
+
+    if (isSnapshot.value) {
+      Some(snapshots) // 例: 0.9.0‑SNAPSHOT → Sonatype snapshot
+    } else if (sys.props.get("bundlePublish").contains("true")) {
+      // GitHub Action から ‑DbundlePublish=true が来たときだけ
+      Some(Resolver.file("bundle", file("central-bundle")))
+    } else {
+      Some(releases) // 普通のリリース (= staging)
+    }
   },
   credentials += Credentials(
     "Sonatype Nexus Repository Manager",
