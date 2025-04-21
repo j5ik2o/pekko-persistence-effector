@@ -3,7 +3,6 @@ on:
   push:
     tags:     [ 'v*' ]   # タグ付けリリース
     branches: [ main ]   # SNAPSHOT
-
 jobs:
   build:
     runs-on: ubuntu-latest
