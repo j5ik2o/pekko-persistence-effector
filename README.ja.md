@@ -9,6 +9,13 @@
 
 *他の言語で読む: [English](README.md)*
 
+## プロジェクト構造
+
+このプロジェクトは以下のモジュールで構成されています：
+
+- **library**: Persistence Effectorパターンを実装するコアライブラリコード
+- **example**: 異なる使用パターンを示すサンプル実装
+
 ## 概要
 
 `pekko-persistence-effector` は Apache Pekko を使用したイベントソーシングパターンの実装を改善するライブラリです。従来の Pekko Persistence Typed の制約を解消し、より直感的なアクタープログラミングスタイルでイベントソーシングを実現します。Scala と Java の両方の DSL をサポートしています。
@@ -22,6 +29,9 @@
 - **段階的な実装**: 最初はインメモリモードで開発し、後から永続化対応へ移行可能。
 - **型安全**: Scala 3 の型システムを活用した型安全な設計 (Scala DSL)。
 - **強化されたエラーハンドリング**: 永続化操作のための設定可能なリトライ機構を含み、一時的な障害に対する回復力を向上。
+  - タイムアウトベースの永続化操作リトライ戦略
+  - PersistenceStoreActorの再起動のための設定可能なバックオフ設定
+  - 永続化失敗とドメインバリデーションエラーの明確な分離
 
 ## 背景: なぜこのライブラリが必要か
 
@@ -304,6 +314,33 @@ object BankAccountAggregate {
 - Domain Model: [BankAccount.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/persistenceEffector/oop/BankAccount.java)
 - Commands: [BankAccountCommand.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountCommand.java)
 - Events: [BankAccountEvent.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountEvent.java)
+
+## 実装方法の比較
+
+`example`ディレクトリには、銀行口座アグリゲートの異なる実装方法が含まれています。これらの実装方法を比較した表は以下の通りです：
+
+| 評価基準 | defaultStyle<br>nonPersistence<br>fp | defaultStyle<br>nonPersistence<br>oop | defaultStyle<br>persistence<br>fp | persistenceEffector<br>fp | persistenceEffector<br>oop |
+|---------|:-----:|:-----:|:-----:|:-----:|:-----:|
+| コードの簡潔さ | ★★★★★ | ★★★☆☆ | ★★★☆☆ | ★★★★★ | ★★★☆☆ |
+| 保守性 | ★★★★☆ | ★★★☆☆ | ★★★☆☆ | ★★★★☆ | ★★★☆☆ |
+| 拡張性 | ★★★★☆ | ★★★☆☆ | ★★★☆☆ | ★★★★☆ | ★★★☆☆ |
+| テスト容易性 | ★★★★★ | ★★★☆☆ | ★★★☆☆ | ★★★★☆ | ★★★★☆ |
+| パフォーマンス | ★★★★★ | ★★★★★ | ★★★☆☆ | ★★★★☆ | ★★★★☆ |
+| 永続化の容易さ | N/A | N/A | ★★★★☆ | ★★★★★ | ★★★★★ |
+| 設定の柔軟性 | ★★☆☆☆ | ★★☆☆☆ | ★★★☆☆ | ★★★★★ | ★★★★★ |
+| エラーハンドリング | ★★★☆☆ | ★★★☆☆ | ★★★★☆ | ★★★★☆ | ★★★★☆ |
+| 並行処理の安全性 | ★★★☆☆ | ★★★☆☆ | ★★★★☆ | ★★★★★ | ★★★★★ |
+| 学習の容易さ | ★★★★★ | ★★★★☆ | ★★☆☆☆ | ★★★★★ | ★★★★☆ |
+
+**総合評価**:
+- **最も簡潔で学習が容易**: defaultStyle/nonPersistence/fp
+- **最も保守性が高い**: persistenceEffector/fp
+- **最も拡張性が高い**: persistenceEffector/fp と persistenceEffector/oop
+- **最も永続化機能が充実**: persistenceEffector/fp と persistenceEffector/oop
+- **最もパフォーマンスが高い**: defaultStyle/nonPersistence/fp と defaultStyle/nonPersistence/oop
+- **最もバランスが取れている**: persistenceEffector/fp
+
+詳細については、[implementation-comparison.md](implementation-comparison.md)を参照してください。
 
 ## このライブラリを使用するシーン
 
