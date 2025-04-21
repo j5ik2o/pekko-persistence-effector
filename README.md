@@ -9,6 +9,13 @@ A library for efficient implementation of event sourcing and state transitions w
 
 *Read this in other languages: [日本語](README.ja.md)*
 
+## Project Structure
+
+This project is organized into the following modules:
+
+- **library**: Core library code implementing the Persistence Effector pattern
+- **example**: Example implementations demonstrating different usage patterns
+
 ## Overview
 
 `pekko-persistence-effector` is a library that improves the implementation of event sourcing patterns using Apache Pekko. It eliminates the constraints of traditional Pekko Persistence Typed and enables event sourcing with a more intuitive actor programming style, supporting both Scala and Java DSLs.
@@ -22,6 +29,9 @@ A library for efficient implementation of event sourcing and state transitions w
 - **Incremental Implementation**: Start with in-memory mode during development, then migrate to persistence later.
 - **Type Safety**: Type-safe design utilizing Scala 3's type system (Scala DSL).
 - **Enhanced Error Handling**: Includes configurable retry mechanisms for persistence operations, improving resilience against transient failures.
+  - Timeout-based retry strategies for persistence operations
+  - Configurable backoff settings for PersistenceStoreActor restart
+  - Clear separation of persistence failures from domain validation errors
 
 ## Background: Why This Library is Needed
 
@@ -305,6 +315,33 @@ For more detailed implementation examples, see the following files:
 - Commands: [BankAccountCommand.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountCommand.java)
 - Events: [BankAccountEvent.java](example/src/main/java/com/github/j5ik2o/pekko/persistence/effector/example/javaimpl/BankAccountEvent.java)
 
+## Implementation Approaches Comparison
+
+The `example` directory contains different implementation approaches for the bank account aggregate. These approaches are compared in the following table:
+
+| Criteria | defaultStyle<br>nonPersistence<br>fp | defaultStyle<br>nonPersistence<br>oop | defaultStyle<br>persistence<br>fp | persistenceEffector<br>fp | persistenceEffector<br>oop |
+|---------|:-----:|:-----:|:-----:|:-----:|:-----:|
+| Code Conciseness | ★★★★★ | ★★★☆☆ | ★★★☆☆ | ★★★★★ | ★★★☆☆ |
+| Maintainability | ★★★★☆ | ★★★☆☆ | ★★★☆☆ | ★★★★☆ | ★★★☆☆ |
+| Extensibility | ★★★★☆ | ★★★☆☆ | ★★★☆☆ | ★★★★☆ | ★★★☆☆ |
+| Testability | ★★★★★ | ★★★☆☆ | ★★★☆☆ | ★★★★☆ | ★★★★☆ |
+| Performance | ★★★★★ | ★★★★★ | ★★★☆☆ | ★★★★☆ | ★★★★☆ |
+| Persistence Ease | N/A | N/A | ★★★★☆ | ★★★★★ | ★★★★★ |
+| Configuration Flexibility | ★★☆☆☆ | ★★☆☆☆ | ★★★☆☆ | ★★★★★ | ★★★★★ |
+| Error Handling | ★★★☆☆ | ★★★☆☆ | ★★★★☆ | ★★★★☆ | ★★★★☆ |
+| Concurrency Safety | ★★★☆☆ | ★★★☆☆ | ★★★★☆ | ★★★★★ | ★★★★★ |
+| Learning Curve | ★★★★★ | ★★★★☆ | ★★☆☆☆ | ★★★★★ | ★★★★☆ |
+
+**Overall Assessment**:
+- **Most concise and easy to learn**: defaultStyle/nonPersistence/fp
+- **Highest maintainability**: persistenceEffector/fp
+- **Highest extensibility**: persistenceEffector/fp and persistenceEffector/oop
+- **Most comprehensive persistence features**: persistenceEffector/fp and persistenceEffector/oop
+- **Highest performance**: defaultStyle/nonPersistence/fp and defaultStyle/nonPersistence/oop
+- **Most balanced**: persistenceEffector/fp
+
+For more details, see [implementation-comparison.md](implementation-comparison.md).
+
 ## When to Use This Library
 
 This library is particularly well-suited for:
@@ -324,11 +361,8 @@ Note: This library does not depend on `pekko-persistence-typed`. You can use thi
 Add the following to your `build.sbt`:
 
 ```scala
-resolvers += "GitHub Packages" at
-  "https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector"
-
 libraryDependencies ++= Seq(
-  "com.github.j5ik2o" %% "pekko-persistence-effector" % "<latest_version>"
+  "io.github.j5ik2o" %% "pekko-persistence-effector" % "<latest_version>"
 )
 ```
 
@@ -337,28 +371,16 @@ libraryDependencies ++= Seq(
 Add the following to your `build.gradle`:
 
 ```groovy
-repositories {
-    maven {
-        url = uri("https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector")
-    }
-}
-
 dependencies {
-    implementation 'com.github.j5ik2o:pekko-persistence-effector_3:<latest_version>'
+  implementation 'io.github.j5ik2o:pekko-persistence-effector_3:<latest_version>'
 }
 ```
 
 For Kotlin DSL (`build.gradle.kts`):
 
 ```kotlin
-repositories {
-    maven {
-        url = uri("https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector")
-    }
-}
-
 dependencies {
-    implementation("com.github.j5ik2o:pekko-persistence-effector_3:<latest_version>")
+  implementation("io.github.j5ik2o:pekko-persistence-effector_3:<latest_version>")
 }
 ```
 
@@ -367,26 +389,12 @@ dependencies {
 Add the following to your `pom.xml`:
 
 ```xml
-<repositories>
-  <repository>
-    <id>github</id>
-    <url>https://maven.pkg.github.com/j5ik2o/pekko-persistence-effector</url>
-    <snapshots>
-      <enabled>true</enabled>
-    </snapshots>
-  </repository>
-</repositories>
-
-<dependencies>
-  <dependency>
-    <groupId>com.github.j5ik2o</groupId>
-    <artifactId>pekko-persistence-effector_3</artifactId>
-    <version>LATEST</version> <!-- Replace with specific version -->
-  </dependency>
-</dependencies>
+<dependency>
+  <groupId>io.github.j5ik2o</groupId>
+  <artifactId>pekko-persistence-effector_3</artifactId>
+  <version>LATEST</version>
+</dependency>
 ```
-
-
 
 ## License
 

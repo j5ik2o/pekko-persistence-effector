@@ -68,4 +68,13 @@ object Dependencies {
   object airframe {
     val ulid = "org.wvlet.airframe" %% "airframe-ulid" % "2025.1.10"
   }
+
+  object orgIq80Leveldb {
+    val leveldb = "org.iq80.leveldb" % "leveldb" % "0.12"
+  }
+
+  object orgFusesourceLeveldbjni {
+    val leveldbjni = "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
+  }
+
 }
