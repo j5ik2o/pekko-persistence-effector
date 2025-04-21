@@ -246,6 +246,7 @@ object PersistenceEffectorConfig {
       val scalaPersistenceMode = persistenceMode match {
         case PersistenceMode.PERSISTENCE => SPersistenceMode.Persisted
         case PersistenceMode.EPHEMERAL => SPersistenceMode.Ephemeral
+        case PersistenceMode.DEFERRED => SPersistenceMode.Deferred
       }
 
       SPersistenceEffectorConfig.create(

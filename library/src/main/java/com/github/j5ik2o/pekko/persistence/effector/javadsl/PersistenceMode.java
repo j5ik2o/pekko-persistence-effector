@@ -16,5 +16,13 @@ public enum PersistenceMode {
    * faster but does not provide durability across application restarts. Useful for testing or
    * scenarios where persistence is not required.
    */
-  EPHEMERAL
+  EPHEMERAL,
+
+  /**
+   * Deferred persistence mode where persistence operations (persistEvent, etc.) are no-ops. This
+   * mode effectively disables persistence without changing the code path. Useful for scenarios
+   * where you want to temporarily disable persistence, performance testing, or when implementing
+   * dry-run functionality.
+   */
+  DEFERRED
 }
