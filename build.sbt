@@ -32,11 +32,10 @@ val testSettings = Seq(
     scalatest.scalatest % Test,
     apachePekko.actorTestKitTyped % Test,
     apachePekko.serializationJackson % Test,
-    "org.iq80.leveldb" % "leveldb" % "0.12" % Test,
-    "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8" % Test,
+    orgIq80Leveldb.leveldb % Test,
+    orgFusesourceLeveldbjni.leveldbjni % Test,
   ),
-  // IntelliJでのテスト実行時にLevelDBの依存関係が確実に含まれるようにする
-  Compile / unmanagedClasspath += baseDirectory.value / "target" / "scala-3.6.4" / "test-classes",
+  Compile / unmanagedClasspath += baseDirectory.value / "target" / s"scala-${scalaVersion.value}" / "test-classes",
   Test / testOptions += Tests.Setup { () =>
     val journalDir = new java.io.File("target/journal")
     val snapshotDir = new java.io.File("target/snapshot")
@@ -87,7 +86,6 @@ lazy val root = (project in file("."))
 lazy val library = (project in file("library"))
   .settings(baseSettings)
   .settings(testSettings)
-  .settings(publishSettings)
   .settings(
     name := "pekko-persistence-effector",
     // 現在のライブラリの依存関係をそのまま維持
