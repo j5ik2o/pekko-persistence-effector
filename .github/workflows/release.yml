@@ -35,8 +35,10 @@ jobs:
         if: startsWith(github.ref,'refs/tags/v')
         run: |
           sbt \
-            'set every publishTo := { val d = baseDirectory.value / "central-bundle";\
-              Some("bundle" at s"file://${d.getAbsolutePath}") }' \
+            'set every publishTo := {
+              val d = baseDirectory.value / "central-bundle";
+              Some("bundle" at s"file://${d.getAbsolutePath}")
+            }' \
             +publishSigned
           PROJECT=$(basename "$GITHUB_REPOSITORY")
           VERSION=${GITHUB_REF_NAME##v}
