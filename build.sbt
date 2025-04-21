@@ -20,11 +20,12 @@ ThisBuild / scmInfo := Some(
   ),
 )
 
+ThisBuild / dynverSonatypeSnapshots := true
+ThisBuild / dynverSeparator := "-"
+
 val publishSettings = Seq(
   publishMavenStyle := true,
   pomIncludeRepository := (_ => false),
-  dynverSonatypeSnapshots := true,
-  dynverSeparator := "-",
   publishTo := {
     val portal = "https://central.sonatype.com"
     if (isSnapshot.value)
