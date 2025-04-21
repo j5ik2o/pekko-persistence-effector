@@ -362,7 +362,7 @@ object BankAccountAggregate {
 
 ```scala
 libraryDependencies ++= Seq(
-  "io.github.j5ik2o" % "pekko-persistence-effector_3" % "<最新バージョン>"
+  "io.github.j5ik2o" %% "pekko-persistence-effector" % "<最新バージョン>"
 )
 ```
 

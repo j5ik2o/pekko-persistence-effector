@@ -362,7 +362,7 @@ Add the following to your `build.sbt`:
 
 ```scala
 libraryDependencies ++= Seq(
-  "io.github.j5ik2o" % "pekko-persistence-effector_3" % "<latest_version>"
+  "io.github.j5ik2o" %% "pekko-persistence-effector" % "<latest_version>"
 )
 ```
 
