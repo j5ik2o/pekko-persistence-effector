@@ -19,15 +19,11 @@ ThisBuild / scmInfo := Some(
     "scm:git@github.com:j5ik2o/pekko-persistence-effector.git",
   ),
 )
-
 ThisBuild / dynverSonatypeSnapshots := true
 ThisBuild / dynverSeparator := "-"
-
-val publishSettings = Seq(
-  publishMavenStyle := true,
-  pomIncludeRepository := (_ => false),
-  credentials += Credentials(Path.userHome / ".sbt" / "1.0" / "sonatype_credentials"),
-)
+ThisBuild / publishMavenStyle := true
+ThisBuild / pomIncludeRepository := (_ => false)
+ThisBuild / credentials += Credentials(Path.userHome / ".sbt" / "1.0" / "sonatype_credentials")
 
 val testSettings = Seq(
   libraryDependencies ++= Seq(
