@@ -29,7 +29,6 @@ val publishSettings = Seq(
     val nexus = "https://s01.oss.sonatype.org/"
     val snapshots = "snapshots" at nexus + "content/repositories/snapshots"
     val releases = "releases" at nexus + "service/local/staging/deploy/maven2"
-
     if (isSnapshot.value) {
       Some(snapshots) // 例: 0.9.0‑SNAPSHOT → Sonatype snapshot
     } else if (sys.props.get("bundlePublish").contains("true")) {
@@ -41,7 +40,7 @@ val publishSettings = Seq(
   },
   credentials += Credentials(
     "Sonatype Nexus Repository Manager",
-    "central.sonatype.com",
+    "s01.oss.sonatype.org",
     sys.env.getOrElse("SONATYPE_USERNAME", ""),
     sys.env.getOrElse("SONATYPE_PASSWORD", ""),
   ),
