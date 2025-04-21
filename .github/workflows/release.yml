@@ -42,7 +42,10 @@ jobs:
 
           # ---- ① ここを ThisBuild / publishTo に変更 ----
           sbt \
-            'set every publishTo := Some("bundle" at "file:./central-bundle")' \
+            'set every publishTo := {
+              val dir = baseDirectory.value / "central-bundle"
+              Some("bundle" at s"file://${dir.getAbsolutePath}")
+            }' \
             '+publishSigned'
 
           (cd central-bundle && zip -rq ../central-bundle.zip .)
