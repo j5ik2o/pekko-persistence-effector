@@ -26,13 +26,6 @@ ThisBuild / dynverSeparator := "-"
 val publishSettings = Seq(
   publishMavenStyle := true,
   pomIncludeRepository := (_ => false),
-  publishTo := {
-    val portal = "https://central.sonatype.com"
-    if (isSnapshot.value)
-      Some("central-snapshots" at s"$portal/repository/maven-snapshots/")
-    else
-      None
-  },
   credentials += Credentials(Path.userHome / ".sbt" / "1.0" / "sonatype_credentials"),
 )
 
