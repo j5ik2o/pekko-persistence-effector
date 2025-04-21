@@ -32,6 +32,7 @@ val publishSettings = Seq(
     else
       None
   },
+  credentials += Credentials(Path.userHome / ".sbt" / "1.0" / "sonatype_credentials"),
 )
 
 val testSettings = Seq(
