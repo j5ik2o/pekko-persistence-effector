@@ -286,9 +286,9 @@ object PersistenceEffector {
     context: ActorContext[M],
   ): Behavior[M] =
     config.persistenceMode match {
-      case PersistenceMode.Persisted  => buildPersisted(config)(onReady)
-      case PersistenceMode.Ephemeral  => buildEphemeral(config)(onReady)
-      case PersistenceMode.Deferred   => buildDeferred(config)(onReady)
+      case PersistenceMode.Persisted => buildPersisted(config)(onReady)
+      case PersistenceMode.Ephemeral => buildEphemeral(config)(onReady)
+      case PersistenceMode.Deferred => buildDeferred(config)(onReady)
     }
 
   // ---------------------------------
@@ -317,9 +317,9 @@ object PersistenceEffector {
     )
 
     val adapter = context.messageAdapter[PersistenceReply[S, E]] {
-      case PersistSingleEventSucceeded(event)  => wrapPersistedEvents(Seq(event))
+      case PersistSingleEventSucceeded(event) => wrapPersistedEvents(Seq(event))
       case PersistMultipleEventsSucceeded(events) => wrapPersistedEvents(events)
-      case PersistSnapshotSucceeded(snapshot)  => wrapPersistedSnapshot(snapshot)
+      case PersistSnapshotSucceeded(snapshot) => wrapPersistedSnapshot(snapshot)
       case PersistSnapshotFailed(snapshot, cause) =>
         throw new IllegalStateException("Failed to persist snapshot", cause)
       case DeleteSnapshotsSucceeded(maxSequenceNumber) => wrapDeleteSnapshots(maxSequenceNumber)
@@ -332,7 +332,7 @@ object PersistenceEffector {
         Behaviors.receiveMessagePartial { msg =>
           msg.asMatchable match {
             case msg: RecoveryCompletedInternal[?] =>
-              val state      = msg.asInstanceOf[RecoveryCompletedInternal[S]].state
+              val state = msg.asInstanceOf[RecoveryCompletedInternal[S]].state
               val sequenceNr = msg.asInstanceOf[RecoveryCompletedInternal[S]].sequenceNr
               context.log.debug(
                 "Recovery completed. State = {}, SequenceNr = {}",
