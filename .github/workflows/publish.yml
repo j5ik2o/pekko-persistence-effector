@@ -42,9 +42,10 @@ jobs:
           DATE_TIME=$(date +%Y%m%d-%H%M%S)
           ZIP_FILE="${PROJECT}-v${VERSION}-${DATE_TIME}.zip"
           (cd central-bundle && zip -rq ../"$ZIP_FILE" .)
-          curl -sf \
+          curl --fail-with-body -sS \
             -u "$SONATYPE_USERNAME:$SONATYPE_PASSWORD" \
             -F bundle=@"$ZIP_FILE" \
+            -w "\nHTTP %{http_code}\n" \
             "https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC"
       - name: Publish Snapshot JAR
         if: github.ref == 'refs/heads/main'
