@@ -286,93 +286,101 @@ object PersistenceEffector {
     context: ActorContext[M],
   ): Behavior[M] =
     config.persistenceMode match {
-      case PersistenceMode.Persisted =>
-        // Existing persistence implementation
-        import config.*
-        // Fix recoveryAdapter: Convert from RecoveryDone to RecoveryCompletedInternal
-        val recoveryAdapter = context.messageAdapter[RecoveryDone[S]] { rd =>
-          // Wrap both state and sequenceNr
-          // Using asInstanceOf because we need to cast to M type
-          RecoveryCompletedInternal(rd.state, rd.sequenceNr).asInstanceOf[M]
-        }
+      case PersistenceMode.Persisted => buildPersisted(config)(onReady)
+      case PersistenceMode.Ephemeral => buildEphemeral(config)(onReady)
+      case PersistenceMode.Deferred => buildDeferred(config)(onReady)
+    }
 
-        val persistenceRef = spawnEventStoreActor(
-          context,
-          persistenceId,
-          initialState,
-          applyEvent,
-          recoveryAdapter,
-          backoffConfig,
-        )
+  // ---------------------------------
+  //  Private helpers per mode
+  // ---------------------------------
 
-        val adapter = context.messageAdapter[PersistenceReply[S, E]] {
-          // Event persistence
-          case PersistSingleEventSucceeded(event) => wrapPersistedEvents(Seq(event))
-          case PersistMultipleEventsSucceeded(events) => wrapPersistedEvents(events)
-          // Snapshot persistence
-          case PersistSnapshotSucceeded(snapshot) => wrapPersistedSnapshot(snapshot)
-          case PersistSnapshotFailed(snapshot, cause) =>
-            throw new IllegalStateException("Failed to persist snapshot", cause)
-          // Snapshot deletion
-          case DeleteSnapshotsSucceeded(maxSequenceNumber) => wrapDeleteSnapshots(maxSequenceNumber)
-          case DeleteSnapshotsFailed(maxSequenceNumber, cause) =>
-            throw new IllegalStateException("Failed to delete snapshots", cause)
-        }
+  private def buildPersisted[S, E, M](
+    config: PersistenceEffectorConfig[S, E, M],
+  )(onReady: PartialFunction[(S, PersistenceEffector[S, E, M]), Behavior[M]])(using
+    context: ActorContext[M],
+  ): Behavior[M] = {
+    import config.*
 
-        def awaitRecovery(): Behavior[M] =
-          Behaviors.withStash(config.stashSize) { stashBuffer =>
-            // Use receiveMessagePartial to improve type safety
-            Behaviors.receiveMessagePartial { msg =>
-              // Direct matching with RecoveryCompletedInternal type (requires @unchecked)
-              msg.asMatchable match {
-                case msg: RecoveryCompletedInternal[?] =>
-                  val state = msg.asInstanceOf[RecoveryCompletedInternal[S]].state
-                  val sequenceNr =
-                    msg.asInstanceOf[RecoveryCompletedInternal[S]].sequenceNr // Extract sequenceNr
-                  context.log.debug(
-                    "Recovery completed. State = {}, SequenceNr = {}",
-                    state,
-                    sequenceNr,
-                  ) // Use context directly
-                  val effector = new DefaultPersistenceEffector[S, E, M](
-                    context, // Use context directly
-                    stashBuffer,
-                    config,
-                    persistenceRef,
-                    adapter,
-                    sequenceNr, // Pass sequenceNr to DefaultPersistenceEffector
-                  )
-                  stashBuffer.unstashAll(onReady(state, effector))
-                case msg => // Stash other messages
-                  context.log.debug(
-                    "Stashing message during recovery: {}",
-                    msg,
-                  ) // Use context directly
-                  stashBuffer.stash(msg)
-                  Behaviors.same
-              }
-            }
+    // Fix recoveryAdapter: Convert from RecoveryDone to RecoveryCompletedInternal
+    val recoveryAdapter = context.messageAdapter[RecoveryDone[S]] { rd =>
+      RecoveryCompletedInternal(rd.state, rd.sequenceNr).asInstanceOf[M]
+    }
+
+    val persistenceRef = spawnEventStoreActor(
+      context,
+      persistenceId,
+      initialState,
+      applyEvent,
+      recoveryAdapter,
+      backoffConfig,
+    )
+
+    val adapter = context.messageAdapter[PersistenceReply[S, E]] {
+      case PersistSingleEventSucceeded(event) => wrapPersistedEvents(Seq(event))
+      case PersistMultipleEventsSucceeded(events) => wrapPersistedEvents(events)
+      case PersistSnapshotSucceeded(snapshot) => wrapPersistedSnapshot(snapshot)
+      case PersistSnapshotFailed(snapshot, cause) =>
+        throw new IllegalStateException("Failed to persist snapshot", cause)
+      case DeleteSnapshotsSucceeded(maxSequenceNumber) => wrapDeleteSnapshots(maxSequenceNumber)
+      case DeleteSnapshotsFailed(maxSequenceNumber, cause) =>
+        throw new IllegalStateException("Failed to delete snapshots", cause)
+    }
+
+    def awaitRecovery(): Behavior[M] =
+      Behaviors.withStash(config.stashSize) { stashBuffer =>
+        Behaviors.receiveMessagePartial { msg =>
+          msg.asMatchable match {
+            case msg: RecoveryCompletedInternal[?] =>
+              val state = msg.asInstanceOf[RecoveryCompletedInternal[S]].state
+              val sequenceNr = msg.asInstanceOf[RecoveryCompletedInternal[S]].sequenceNr
+              context.log.debug(
+                "Recovery completed. State = {}, SequenceNr = {}",
+                state,
+                sequenceNr,
+              )
+              val effector = new DefaultPersistenceEffector[S, E, M](
+                context,
+                stashBuffer,
+                config,
+                persistenceRef,
+                adapter,
+                sequenceNr,
+              )
+              stashBuffer.unstashAll(onReady(state, effector))
+            case other =>
+              context.log.debug("Stashing message during recovery: {}", other)
+              stashBuffer.stash(other)
+              Behaviors.same
           }
-
-        awaitRecovery()
-
-      case PersistenceMode.Ephemeral =>
-        // In-memory implementation
-        Behaviors.withStash(config.stashSize) { stashBuffer =>
-          val effector = new InMemoryEffector[S, E, M](
-            context,
-            stashBuffer,
-            config,
-          )
-          // Use initial state directly because it's in-memory
-          onReady(effector.getState, effector)
         }
-      case PersistenceMode.Deferred =>
-        // Deferred mode
-        Behaviors.withStash(config.stashSize) { stashBuffer =>
-          val effector = new DeferredEffector[S, E, M](context, config)
-          onReady(effector.getState, effector)
-        }
+      }
+
+    awaitRecovery()
+  }
+
+  private def buildEphemeral[S, E, M](
+    config: PersistenceEffectorConfig[S, E, M],
+  )(onReady: PartialFunction[(S, PersistenceEffector[S, E, M]), Behavior[M]])(using
+    context: ActorContext[M],
+  ): Behavior[M] =
+    Behaviors.withStash(config.stashSize) { stashBuffer =>
+      val effector = new InMemoryEffector[S, E, M](
+        context,
+        stashBuffer,
+        config,
+      )
+      onReady(effector.getState, effector)
+    }
+
+  private def buildDeferred[S, E, M](
+    config: PersistenceEffectorConfig[S, E, M],
+  )(onReady: PartialFunction[(S, PersistenceEffector[S, E, M]), Behavior[M]])(using
+    context: ActorContext[M],
+  ): Behavior[M] =
+    Behaviors.withStash(config.stashSize) { _ =>
+      val effector = new DeferredEffector[S, E, M](context, config)
+      onReady(effector.getState, effector)
     }
 
   private def spawnEventStoreActor[M, E, S](

@@ -5,8 +5,8 @@ on:
       force_bump:
         description: 'Force version bump'
         required: true
+        type: boolean
         default: false
-        type: boolean        
   schedule:
     - cron: '0 0 * * *'
 jobs:
