@@ -54,7 +54,7 @@ object Dependencies {
 
   object githubJ5ik2o {
     val pekkoPersistenceDynamoDBJournal =
-      "io.github.j5ik2o" %% s"pekko-persistence-dynamodb-journal-v2" % "1.0.57"
+      "io.github.j5ik2o" %% s"pekko-persistence-dynamodb-journal-v2" % "1.0.58"
     val pekkoPersistenceDynamoDBSnapshot =
       "io.github.j5ik2o" %% s"pekko-persistence-dynamodb-snapshot-v2" % "1.0.57"
   }
