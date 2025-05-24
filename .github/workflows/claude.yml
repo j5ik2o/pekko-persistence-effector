@@ -10,9 +10,10 @@ on:
     types: [submitted]
 
 permissions:
-  contents: read
+  contents: write
   issues: write
   pull-requests: write
+  metadata: read
 
 jobs:
   claude-response:
