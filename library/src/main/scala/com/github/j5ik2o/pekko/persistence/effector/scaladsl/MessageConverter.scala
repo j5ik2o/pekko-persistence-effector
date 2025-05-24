@@ -1,7 +1,6 @@
 package com.github.j5ik2o.pekko.persistence.effector.scaladsl
 
 import scala.compiletime.asMatchable
-import scala.jdk.CollectionConverters.*
 
 /**
  * Trait for converting between domain events/states and messages.

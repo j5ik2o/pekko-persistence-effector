@@ -168,7 +168,8 @@ private[effector] final class InMemoryEffector[S, E, M](
 
     // Save snapshot when evaluating snapshot strategy or force=true
     val shouldSaveSnapshot = {
-      val result = SnapshotHelper.shouldTakeSnapshot(Some(event), snapshot, sequenceNumber, forceSnapshot, config.snapshotCriteria)
+      val result =
+        SnapshotHelper.shouldTakeSnapshot(Some(event), snapshot, sequenceNumber, forceSnapshot, config.snapshotCriteria)
       ctx.log.debug("Snapshot criteria evaluation result: {}", result)
       result
     }
@@ -217,10 +218,15 @@ private[effector] final class InMemoryEffector[S, E, M](
     val finalSequenceNumber = getCurrentSequenceNumber
 
     // Save snapshot when evaluating snapshot strategy or force=true
-    val shouldSave = 
+    val shouldSave =
       forceSnapshot || (events.nonEmpty && {
         val lastEvent = events.last
-        val result = SnapshotHelper.shouldTakeSnapshot(Some(lastEvent), snapshot, finalSequenceNumber, forceSnapshot, config.snapshotCriteria)
+        val result = SnapshotHelper.shouldTakeSnapshot(
+          Some(lastEvent),
+          snapshot,
+          finalSequenceNumber,
+          forceSnapshot,
+          config.snapshotCriteria)
         ctx.log.debug("Snapshot criteria evaluation result: {}", result)
         result
       })

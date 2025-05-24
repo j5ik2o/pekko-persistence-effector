@@ -5,21 +5,23 @@ import com.github.j5ik2o.pekko.persistence.effector.scaladsl.RetentionCriteria
 /**
  * Utility object for handling snapshot retention calculations.
  *
- * This object consolidates the snapshot retention logic that was previously
- * duplicated across multiple effector implementations.
+ * This object consolidates the snapshot retention logic that was previously duplicated across multiple effector
+ * implementations.
  */
 private[scalaimpl] object RetentionHelper {
 
   /**
    * Calculate the maximum sequence number for snapshots that can be safely deleted.
    *
-   * This method implements the retention policy based on the current sequence number
-   * and the configured retention criteria. It ensures that the specified number
-   * of snapshots are kept while safely deleting older ones.
+   * This method implements the retention policy based on the current sequence number and the configured retention
+   * criteria. It ensures that the specified number of snapshots are kept while safely deleting older ones.
    *
-   * @param currentSequenceNumber The current sequence number of the aggregate
-   * @param retention The retention criteria specifying how many snapshots to keep
-   * @return Maximum sequence number of snapshots to be deleted (0 if there are no snapshots to delete)
+   * @param currentSequenceNumber
+   *   The current sequence number of the aggregate
+   * @param retention
+   *   The retention criteria specifying how many snapshots to keep
+   * @return
+   *   Maximum sequence number of snapshots to be deleted (0 if there are no snapshots to delete)
    */
   def calculateMaxSequenceNumberToDelete(
     currentSequenceNumber: Long,

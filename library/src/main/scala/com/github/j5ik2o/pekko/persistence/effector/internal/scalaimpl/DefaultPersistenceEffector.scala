@@ -56,7 +56,7 @@ private[effector] final class DefaultPersistenceEffector[S, E, M](
       "Calculated maxSequenceNumberToDelete: currentSequenceNumber={}, retention={}, result={}",
       currentSequenceNumber,
       retention,
-      result
+      result,
     )
     result
   }
@@ -249,10 +249,15 @@ private[effector] final class DefaultPersistenceEffector[S, E, M](
       persistedEvents => {
         // Automatic snapshot acquisition when evaluating snapshot strategy or force=true
         // Evaluates with only the last event and sequence number
-        val shouldSaveSnapshot = 
+        val shouldSaveSnapshot =
           forceSnapshot || (events.nonEmpty && {
             val lastEvent = events.last
-            val result = SnapshotHelper.shouldTakeSnapshot(Some(lastEvent), snapshot, finalSequenceNumber, forceSnapshot, config.snapshotCriteria)
+            val result = SnapshotHelper.shouldTakeSnapshot(
+              Some(lastEvent),
+              snapshot,
+              finalSequenceNumber,
+              forceSnapshot,
+              config.snapshotCriteria)
             ctx.log.debug("Snapshot criteria evaluation result: {}", result)
             result
           })
