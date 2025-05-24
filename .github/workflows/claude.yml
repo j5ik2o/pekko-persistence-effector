@@ -26,7 +26,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          allowed_tools: "Bash(sbt:*)"
+          allowed_tools: "Bash(sbt:*),Bash(git:*)"
           # Optional: add custom trigger phrase (default: @claude)
           # trigger_phrase: "/claude"
           # Optional: add assignee trigger for issues
