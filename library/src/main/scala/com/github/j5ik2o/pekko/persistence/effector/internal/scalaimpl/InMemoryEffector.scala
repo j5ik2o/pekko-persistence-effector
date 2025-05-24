@@ -142,7 +142,6 @@ private[effector] final class InMemoryEffector[S, E, M](
           ctx.log.debug("Would delete snapshots up to sequence number: {}", maxSeqNrToDelete)
           // Since the actual InMemoryEventStore does not have a method to delete old snapshots,
           // only log output is performed here as a simulation
-
         }
       }
 
