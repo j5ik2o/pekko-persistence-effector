@@ -112,12 +112,9 @@ private[effector] final class InMemoryEffector[S, E, M](
     ctx.log.debug("In-memory persisting snapshot: {}", snapshot)
 
     // Determine whether to save based on force parameter or snapshot strategy
-    val shouldSaveSnapshot = force || config.snapshotCriteria.exists { criteria =>
-      // Evaluation for snapshot (using dummy event because there is no event)
-      val dummyEvent =
-        snapshot.asInstanceOf[E] // Dummy event (no problem at runtime due to type erasure)
+    val shouldSaveSnapshot = {
       val sequenceNumber = getCurrentSequenceNumber
-      val result = criteria.shouldTakeSnapshot(dummyEvent, snapshot, sequenceNumber)
+      val result = SnapshotHelper.shouldTakeSnapshot(None, snapshot, sequenceNumber, force, config.snapshotCriteria)
       ctx.log.debug("Snapshot criteria evaluation result: {}", result)
       result
     }
@@ -170,8 +167,8 @@ private[effector] final class InMemoryEffector[S, E, M](
     val sequenceNumber = getCurrentSequenceNumber
 
     // Save snapshot when evaluating snapshot strategy or force=true
-    val shouldSaveSnapshot = forceSnapshot || config.snapshotCriteria.exists { criteria =>
-      val result = criteria.shouldTakeSnapshot(event, snapshot, sequenceNumber)
+    val shouldSaveSnapshot = {
+      val result = SnapshotHelper.shouldTakeSnapshot(Some(event), snapshot, sequenceNumber, forceSnapshot, config.snapshotCriteria)
       ctx.log.debug("Snapshot criteria evaluation result: {}", result)
       result
     }
@@ -220,10 +217,10 @@ private[effector] final class InMemoryEffector[S, E, M](
     val finalSequenceNumber = getCurrentSequenceNumber
 
     // Save snapshot when evaluating snapshot strategy or force=true
-    val shouldSave =
-      forceSnapshot || (events.nonEmpty && config.snapshotCriteria.exists { criteria =>
+    val shouldSave = 
+      forceSnapshot || (events.nonEmpty && {
         val lastEvent = events.last
-        val result = criteria.shouldTakeSnapshot(lastEvent, snapshot, finalSequenceNumber)
+        val result = SnapshotHelper.shouldTakeSnapshot(Some(lastEvent), snapshot, finalSequenceNumber, forceSnapshot, config.snapshotCriteria)
         ctx.log.debug("Snapshot criteria evaluation result: {}", result)
         result
       })
