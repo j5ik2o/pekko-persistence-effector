@@ -7,8 +7,7 @@ import org.scalatest.wordspec.AnyWordSpec
 /**
  * Unit tests for RetentionHelper.
  *
- * These tests verify the snapshot retention calculation logic without
- * requiring actor system or persistence components.
+ * These tests verify the snapshot retention calculation logic without requiring actor system or persistence components.
  */
 class RetentionHelperSpec extends AnyWordSpec with Matchers {
 

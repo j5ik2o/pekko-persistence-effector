@@ -7,7 +7,7 @@ import org.apache.pekko.actor.typed.scaladsl.Behaviors
 
 import java.util
 import java.util.function.{BiFunction, Function}
-import java.util.{function, Optional}
+import java.util.Optional
 
 /**
  * Java API for PersistenceEffector.

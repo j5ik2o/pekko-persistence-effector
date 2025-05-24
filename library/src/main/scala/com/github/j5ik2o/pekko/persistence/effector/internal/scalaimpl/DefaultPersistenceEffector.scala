@@ -56,7 +56,7 @@ private[effector] final class DefaultPersistenceEffector[S, E, M](
       "Calculated maxSequenceNumberToDelete: currentSequenceNumber={}, retention={}, result={}",
       currentSequenceNumber,
       retention,
-      result
+      result,
     )
     result
   }
@@ -140,12 +140,11 @@ private[effector] final class DefaultPersistenceEffector[S, E, M](
    * @return
    *   Whether a snapshot should be taken
    */
-  private def shouldTakeSnapshot(event: E, state: S, sequenceNumber: Long, force: Boolean): Boolean =
-    force || config.snapshotCriteria.exists { criteria =>
-      val result = criteria.shouldTakeSnapshot(event, state, sequenceNumber)
-      ctx.log.debug("Snapshot criteria evaluation result: {}", result)
-      result
-    }
+  private def shouldTakeSnapshot(event: E, state: S, sequenceNumber: Long, force: Boolean): Boolean = {
+    val result = SnapshotHelper.shouldTakeSnapshot(Some(event), state, sequenceNumber, force, config.snapshotCriteria)
+    ctx.log.debug("Snapshot criteria evaluation result: {}", result)
+    result
+  }
 
   /**
    * Handle snapshot saving
@@ -202,12 +201,8 @@ private[effector] final class DefaultPersistenceEffector[S, E, M](
 
     // Determine whether to save based on force parameter or snapshot strategy
     val shouldSaveSnapshot = force || config.snapshotCriteria.exists { criteria =>
-      // Evaluation for snapshot (use it directly since the state is already passed as a snapshot)
-      // Use the snapshot itself as a virtual event to evaluate even when there is no event
-      val dummyEvent =
-        snapshot.asInstanceOf[E] // Dummy event (no problem at runtime due to type erasure)
       val sequenceNumber = getCurrentSequenceNumber
-      val result = criteria.shouldTakeSnapshot(dummyEvent, snapshot, sequenceNumber)
+      val result = SnapshotHelper.shouldTakeSnapshot(None, snapshot, sequenceNumber, force, Some(criteria))
       ctx.log.debug("Snapshot criteria evaluation result: {}", result)
       result
     }
@@ -255,9 +250,14 @@ private[effector] final class DefaultPersistenceEffector[S, E, M](
         // Automatic snapshot acquisition when evaluating snapshot strategy or force=true
         // Evaluates with only the last event and sequence number
         val shouldSaveSnapshot =
-          forceSnapshot || (events.nonEmpty && config.snapshotCriteria.exists { criteria =>
+          forceSnapshot || (events.nonEmpty && {
             val lastEvent = events.last
-            val result = criteria.shouldTakeSnapshot(lastEvent, snapshot, finalSequenceNumber)
+            val result = SnapshotHelper.shouldTakeSnapshot(
+              Some(lastEvent),
+              snapshot,
+              finalSequenceNumber,
+              forceSnapshot,
+              config.snapshotCriteria)
             ctx.log.debug("Snapshot criteria evaluation result: {}", result)
             result
           })
