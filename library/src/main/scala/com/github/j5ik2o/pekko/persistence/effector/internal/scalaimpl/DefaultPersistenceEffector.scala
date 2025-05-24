@@ -50,55 +50,16 @@ private[effector] final class DefaultPersistenceEffector[S, E, M](
   private def calculateMaxSequenceNumberToDelete(
     currentSequenceNumber: Long,
     retention: RetentionCriteria,
-  ): Long =
-    // Calculate only if both snapshotEvery and keepNSnapshots are set
-    (retention.snapshotEvery, retention.keepNSnapshots) match {
-      case (Some(snapshotEvery), Some(keepNSnapshots)) =>
-        // Output calculated values to log
-        ctx.log.debug(
-          "Calculating maxSequenceNumberToDelete: currentSequenceNumber={}, snapshotEvery={}, keepNSnapshots={}",
-          currentSequenceNumber,
-          snapshotEvery,
-          keepNSnapshots,
-        )
-
-        // Calculate the sequence number of the latest snapshot
-        val latestSnapshotSeqNr = currentSequenceNumber - (currentSequenceNumber % snapshotEvery)
-        ctx.log.debug("Calculated latestSnapshotSeqNr: {}", latestSnapshotSeqNr)
-
-        if (latestSnapshotSeqNr < snapshotEvery) {
-          // If even the first snapshot has not been created
-          ctx.log.debug("latestSnapshotSeqNr < snapshotEvery, returning 0")
-          0L
-        } else {
-          // The oldest sequence number of snapshots to keep
-          val oldestKeptSnapshot =
-            latestSnapshotSeqNr - (snapshotEvery.toLong * (keepNSnapshots - 1))
-          ctx.log.debug("Calculated oldestKeptSnapshot: {}", oldestKeptSnapshot)
-
-          if (oldestKeptSnapshot <= 0) {
-            // If all snapshots to be kept do not exist
-            ctx.log.debug("oldestKeptSnapshot <= 0, returning 0")
-            0L
-          } else {
-            // Maximum sequence number to be deleted (snapshot just before oldestKeptSnapshot)
-            val maxSequenceNumberToDelete = oldestKeptSnapshot - snapshotEvery
-            ctx.log.debug("Calculated maxSequenceNumberToDelete: {}", maxSequenceNumberToDelete)
-
-            if (maxSequenceNumberToDelete <= 0) {
-              ctx.log.debug("maxSequenceNumberToDelete <= 0, returning 0")
-              0L
-            } else {
-              ctx.log.debug("Returning maxSequenceNumberToDelete: {}", maxSequenceNumberToDelete)
-              maxSequenceNumberToDelete
-            }
-          }
-        }
-      case _ =>
-        // Do not delete if either setting is missing
-        ctx.log.debug("snapshotEvery or keepNSnapshots is None, returning 0")
-        0L
-    }
+  ): Long = {
+    val result = RetentionHelper.calculateMaxSequenceNumberToDelete(currentSequenceNumber, retention)
+    ctx.log.debug(
+      "Calculated maxSequenceNumberToDelete: currentSequenceNumber={}, retention={}, result={}",
+      currentSequenceNumber,
+      retention,
+      result
+    )
+    result
+  }
 
   /**
    * Generic method to wait for a specified message type

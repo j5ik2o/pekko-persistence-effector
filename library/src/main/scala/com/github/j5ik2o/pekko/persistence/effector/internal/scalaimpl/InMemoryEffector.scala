@@ -63,34 +63,7 @@ private[effector] final class InMemoryEffector[S, E, M](
     currentSequenceNumber: Long,
     retention: RetentionCriteria,
   ): Long =
-    // Calculate only if both snapshotEvery and keepNSnapshots are set
-    (retention.snapshotEvery, retention.keepNSnapshots) match {
-      case (Some(snapshotEvery), Some(keepNSnapshots)) =>
-        // Calculate the sequence number of the latest snapshot
-        val latestSnapshotSeqNr = currentSequenceNumber - (currentSequenceNumber % snapshotEvery)
-
-        if (latestSnapshotSeqNr < snapshotEvery) {
-          // If even the first snapshot has not been created
-          0L
-        } else {
-          // The oldest sequence number of snapshots to keep
-          val oldestKeptSnapshot =
-            latestSnapshotSeqNr - (snapshotEvery.toLong * (keepNSnapshots - 1))
-
-          if (oldestKeptSnapshot <= 0) {
-            // If all snapshots to be kept do not exist
-            0L
-          } else {
-            // Maximum sequence number to be deleted (snapshot just before oldestKeptSnapshot)
-            val maxSequenceNumberToDelete = oldestKeptSnapshot - snapshotEvery
-
-            if (maxSequenceNumberToDelete <= 0) 0L else maxSequenceNumberToDelete
-          }
-        }
-      case _ =>
-        // Do not delete if either setting is missing
-        0L
-    }
+    RetentionHelper.calculateMaxSequenceNumberToDelete(currentSequenceNumber, retention)
 
   // Emulate the persist method of PersistentActor
   override def persistEvent(event: E)(onPersisted: E => Behavior[M]): Behavior[M] = {
@@ -169,7 +142,6 @@ private[effector] final class InMemoryEffector[S, E, M](
           ctx.log.debug("Would delete snapshots up to sequence number: {}", maxSeqNrToDelete)
           // Since the actual InMemoryEventStore does not have a method to delete old snapshots,
           // only log output is performed here as a simulation
-
         }
       }
 
