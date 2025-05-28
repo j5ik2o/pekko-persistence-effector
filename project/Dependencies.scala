@@ -41,7 +41,7 @@ object Dependencies {
   }
 
   object postgresql {
-    val postgresql = "org.postgresql" % "postgresql" % "42.7.5"
+    val postgresql = "org.postgresql" % "postgresql" % "42.7.6"
   }
 
   object scalameta {
