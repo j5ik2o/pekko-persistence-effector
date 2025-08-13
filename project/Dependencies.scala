@@ -66,7 +66,7 @@ object Dependencies {
   }
 
   object airframe {
-    val ulid = "org.wvlet.airframe" %% "airframe-ulid" % "2025.1.15"
+    val ulid = "org.wvlet.airframe" %% "airframe-ulid" % "2025.1.16"
   }
 
   object orgIq80Leveldb {
