@@ -3,6 +3,7 @@ package com.github.j5ik2o.pekko.persistence.effector.internal.scalaimpl
 import com.github.j5ik2o.pekko.persistence.effector.scaladsl.{
   PersistenceEffector,
   PersistenceEffectorConfig,
+  PersistenceId,
   PersistenceMode,
 }
 import com.github.j5ik2o.pekko.persistence.effector.{TestEvent, TestMessage, TestState}
@@ -28,7 +29,7 @@ class InMemoryEffectorSpec extends PersistenceEffectorTestBase {
 
       val config =
         PersistenceEffectorConfig.create[TestState, TestEvent, TestMessage](
-          persistenceId = persistenceId,
+          persistenceId = PersistenceId.ofUniqueId(persistenceId),
           initialState = initialState,
           applyEvent = (state, event) => state.applyEvent(event),
           stashSize = Int.MaxValue,
@@ -89,7 +90,7 @@ class InMemoryEffectorSpec extends PersistenceEffectorTestBase {
 
       val config =
         PersistenceEffectorConfig.create[TestState, TestEvent, TestMessage](
-          persistenceId = persistenceId,
+          persistenceId = PersistenceId.ofUniqueId(persistenceId),
           initialState = initialState,
           applyEvent = countingApplyEvent, // Use function with counter
           stashSize = Int.MaxValue,

@@ -184,7 +184,7 @@ object PersistenceEffector {
     onReady: BiFunction[S, PersistenceEffector[S, E, M], Behavior[M]],
   ): Behavior[M] = {
     val config = PersistenceEffectorConfig.create[S, E, M](
-      persistenceId = persistenceId,
+      persistenceId = PersistenceId.ofUniqueId(persistenceId),
       initialState = initialState,
       applyEvent = applyEvent,
       messageConverter = messageConverter,
@@ -218,7 +218,7 @@ object PersistenceEffector {
     onReady: BiFunction[S, PersistenceEffector[S, E, M], Behavior[M]],
   ): Behavior[M] = {
     val config = PersistenceEffectorConfig.create[S, E, M](
-      persistenceId = persistenceId,
+      persistenceId = PersistenceId.ofUniqueId(persistenceId),
       initialState = initialState,
       applyEvent = applyEvent,
       persistenceMode = PersistenceMode.PERSISTENCE,
@@ -267,7 +267,7 @@ object PersistenceEffector {
     onReady: BiFunction[S, PersistenceEffector[S, E, M], Behavior[M]],
   ): Behavior[M] = {
     val config = PersistenceEffectorConfig.create[S, E, M](
-      persistenceId = persistenceId,
+      persistenceId = PersistenceId.ofUniqueId(persistenceId),
       initialState = initialState,
       applyEvent = applyEvent,
       messageConverter = messageConverter,
@@ -301,7 +301,7 @@ object PersistenceEffector {
     onReady: BiFunction[S, PersistenceEffector[S, E, M], Behavior[M]],
   ): Behavior[M] = {
     val config = PersistenceEffectorConfig.create[S, E, M](
-      persistenceId = persistenceId,
+      persistenceId = PersistenceId.ofUniqueId(persistenceId),
       initialState = initialState,
       applyEvent = applyEvent,
       persistenceMode = PersistenceMode.EPHEMERAL,

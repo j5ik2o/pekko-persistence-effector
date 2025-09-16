@@ -4,7 +4,6 @@ import com.github.j5ik2o.pekko.persistence.effector.scaladsl.*
 import com.github.j5ik2o.pekko.persistence.effector.{TestEvent, TestMessage, TestState}
 import org.apache.pekko.actor.typed.Behavior
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
-import org.scalatest.concurrent.Eventually
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.*
@@ -51,7 +50,7 @@ class SnapshotCriteriaIntegrationSpec extends PersistenceEffectorTestBase {
       // Set CountBased snapshot strategy (every 2 events)
       val config =
         PersistenceEffectorConfig.create[TestState, TestEvent, TestMessage](
-          persistenceId = persistenceId,
+          persistenceId = PersistenceId.ofUniqueId(persistenceId),
           initialState = initialState,
           applyEvent = (state, event) => state.applyEvent(event),
           persistenceMode = persistenceMode,
@@ -131,7 +130,7 @@ class SnapshotCriteriaIntegrationSpec extends PersistenceEffectorTestBase {
       // Set CountBased snapshot strategy (every 2 events)
       val config =
         PersistenceEffectorConfig.create[TestState, TestEvent, TestMessage](
-          persistenceId = persistenceId,
+          persistenceId = PersistenceId.ofUniqueId(persistenceId),
           initialState = initialState,
           applyEvent = (state, event) => state.applyEvent(event),
           stashSize = Int.MaxValue,

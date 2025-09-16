@@ -39,7 +39,7 @@ public class BankAccountAggregate {
     var config =
         PersistenceEffectorConfig
             .<BankAccountAggregateState, BankAccountEvent, BankAccountCommand>create(
-                actorName(aggregateId),
+                PersistenceId.ofUniqueId(actorName(aggregateId)),
                 new BankAccountAggregateState.NotCreated(aggregateId),
                 BankAccountAggregateState::applyEvent)
             .withPersistenceMode(persistenceMode)
