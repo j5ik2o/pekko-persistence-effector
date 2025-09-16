@@ -18,6 +18,7 @@ import com.github.j5ik2o.pekko.persistence.effector.example.scalaimpl.{
 import com.github.j5ik2o.pekko.persistence.effector.scaladsl.{
   PersistenceEffector,
   PersistenceEffectorConfig,
+  PersistenceId,
   PersistenceMode,
   RetentionCriteria,
   SnapshotCriteria,
@@ -35,7 +36,7 @@ object BankAccountAggregate {
     persistenceMode: PersistenceMode = PersistenceMode.Persisted): Behavior[BankAccountCommand] = {
     val config = PersistenceEffectorConfig
       .create[BankAccountAggregateState, BankAccountEvent, BankAccountCommand](
-        persistenceId = actorName(id),
+        persistenceId = PersistenceId.ofUniqueId(actorName(id)),
         initialState = BankAccountAggregateState.NotCreated(id),
         applyEvent = (state, event) => state.applyEvent(event),
       )

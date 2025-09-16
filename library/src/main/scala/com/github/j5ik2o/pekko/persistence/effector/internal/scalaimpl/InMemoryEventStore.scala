@@ -1,5 +1,7 @@
 package com.github.j5ik2o.pekko.persistence.effector.internal.scalaimpl
 
+import com.github.j5ik2o.pekko.persistence.effector.scaladsl.PersistenceId
+
 /**
  * Singleton object for storing in-memory events and snapshots
  */
@@ -9,17 +11,17 @@ private[effector] object InMemoryEventStore {
 
   // Use thread-safe collections
   // persistenceId -> event list
-  private val events: scala.collection.mutable.Map[String, Vector[Any]] =
-    new java.util.concurrent.ConcurrentHashMap[String, Vector[Any]]().asScala
+  private val events: scala.collection.mutable.Map[PersistenceId, Vector[Any]] =
+    new java.util.concurrent.ConcurrentHashMap[PersistenceId, Vector[Any]]().asScala
   // persistenceId -> latest snapshot
-  private val snapshots: scala.collection.mutable.Map[String, Any] =
-    new java.util.concurrent.ConcurrentHashMap[String, Any]().asScala
+  private val snapshots: scala.collection.mutable.Map[PersistenceId, Any] =
+    new java.util.concurrent.ConcurrentHashMap[PersistenceId, Any]().asScala
   // persistenceId -> latest event index at snapshot save time
-  private val snapshotEventIndices: scala.collection.mutable.Map[String, Int] =
-    new java.util.concurrent.ConcurrentHashMap[String, Int]().asScala
+  private val snapshotEventIndices: scala.collection.mutable.Map[PersistenceId, Int] =
+    new java.util.concurrent.ConcurrentHashMap[PersistenceId, Int]().asScala
   // persistenceId -> current sequence number
-  private val sequenceNumbers: scala.collection.mutable.Map[String, Long] =
-    new java.util.concurrent.ConcurrentHashMap[String, Long]().asScala
+  private val sequenceNumbers: scala.collection.mutable.Map[PersistenceId, Long] =
+    new java.util.concurrent.ConcurrentHashMap[PersistenceId, Long]().asScala
 
   /**
    * Add a single event to the store.
@@ -31,7 +33,7 @@ private[effector] object InMemoryEventStore {
    * @tparam E
    *   Event type
    */
-  def addEvent[E](id: String, event: E): Unit = {
+  def addEvent[E](id: PersistenceId, event: E): Unit = {
     events.updateWith(id) {
       case Some(existing) => Some(existing :+ event)
       case None => Some(Vector(event))
@@ -50,7 +52,7 @@ private[effector] object InMemoryEventStore {
    * @tparam E
    *   Event type
    */
-  def addEvents[E](id: String, newEvents: Seq[E]): Unit = {
+  def addEvents[E](id: PersistenceId, newEvents: Seq[E]): Unit = {
     events.updateWith(id) {
       case Some(existing) => Some(existing ++ newEvents)
       case None => Some(newEvents.toVector)
@@ -67,7 +69,7 @@ private[effector] object InMemoryEventStore {
    * @return
    *   Current sequence number
    */
-  def getCurrentSequenceNumber(id: String): Long =
+  def getCurrentSequenceNumber(id: PersistenceId): Long =
     sequenceNumbers.getOrElse(id, 0L)
 
   /**
@@ -80,7 +82,7 @@ private[effector] object InMemoryEventStore {
    * @tparam S
    *   Snapshot type
    */
-  def saveSnapshot[S](id: String, snapshot: S): Unit = {
+  def saveSnapshot[S](id: PersistenceId, snapshot: S): Unit = {
     snapshots.update(id, snapshot)
     // Record the number of events at the time of snapshot save
     snapshotEventIndices.update(id, events.getOrElse(id, Vector.empty).size)
@@ -96,7 +98,7 @@ private[effector] object InMemoryEventStore {
    * @return
    *   Vector of events
    */
-  def getEvents[E](id: String): Vector[E] =
+  def getEvents[E](id: PersistenceId): Vector[E] =
     events.getOrElse(id, Vector.empty).asInstanceOf[Vector[E]]
 
   /**
@@ -109,7 +111,7 @@ private[effector] object InMemoryEventStore {
    * @return
    *   Option containing the latest snapshot, or None if no snapshot exists
    */
-  def getLatestSnapshot[S](id: String): Option[S] =
+  def getLatestSnapshot[S](id: PersistenceId): Option[S] =
     snapshots.get(id).map(_.asInstanceOf[S])
 
   /**
@@ -122,7 +124,7 @@ private[effector] object InMemoryEventStore {
    * @return
    *   Vector of events after the latest snapshot
    */
-  def getEventsAfterSnapshot[E](id: String): Vector[E] = {
+  def getEventsAfterSnapshot[E](id: PersistenceId): Vector[E] = {
     val allEvents = getEvents[E](id)
     if (snapshots.contains(id) && allEvents.nonEmpty) {
       // If a snapshot exists and events also exist,
@@ -150,7 +152,7 @@ private[effector] object InMemoryEventStore {
    * @return
    *   Updated state after applying all events
    */
-  def replayEvents[S, E](id: String, state: S, applyEvent: (S, E) => S): S =
+  def replayEvents[S, E](id: PersistenceId, state: S, applyEvent: (S, E) => S): S =
     getEventsAfterSnapshot[E](id).foldLeft(state)(applyEvent)
 
   /**

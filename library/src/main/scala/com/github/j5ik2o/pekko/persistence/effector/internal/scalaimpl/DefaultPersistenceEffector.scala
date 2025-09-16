@@ -4,6 +4,7 @@ import com.github.j5ik2o.pekko.persistence.effector.internal.scalaimpl.Persisten
 import com.github.j5ik2o.pekko.persistence.effector.scaladsl.{
   PersistenceEffector,
   PersistenceEffectorConfig,
+  PersistenceId,
   RetentionCriteria,
 }
 import org.apache.pekko.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer}
@@ -24,7 +25,7 @@ private[effector] final class DefaultPersistenceEffector[S, E, M](
   // Manage the current sequence number for each PersistenceId
   // Set initial value with initialSequenceNr
   private val sequenceNumbers =
-    scala.collection.mutable.Map[String, Long](persistenceId -> initialSequenceNr)
+    scala.collection.mutable.Map[PersistenceId, Long](persistenceId -> initialSequenceNr)
 
   // Change the default value of getOrElse to initialSequenceNr (however, it should normally exist in the map)
   private def getCurrentSequenceNumber: Long =
@@ -80,7 +81,7 @@ private[effector] final class DefaultPersistenceEffector[S, E, M](
     logMessage: String,
     onSuccess: T => Behavior[M],
   ): Behavior[M] =
-    Behaviors.receiveMessagePartial { msg =>
+    Behaviors.receiveMessage { msg =>
       ctx.log.debug("Waiting for message: {}", msg)
       msg.asMatchable match {
         case msg if messageMatcher(msg).isDefined =>

@@ -20,7 +20,7 @@ object BankAccountAggregate {
   ): Behavior[BankAccountCommand] = {
     val config = PersistenceEffectorConfig
       .create[BankAccountAggregateState, BankAccountEvent, BankAccountCommand](
-        persistenceId = actorName(aggregateId),
+        persistenceId = PersistenceId.ofUniqueId(actorName(aggregateId)),
         initialState = BankAccountAggregateState.NotCreated(aggregateId),
         applyEvent = (state, event) => state.applyEvent(event),
       )

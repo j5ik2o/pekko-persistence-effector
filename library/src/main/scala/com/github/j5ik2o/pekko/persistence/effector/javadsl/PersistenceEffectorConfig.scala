@@ -27,7 +27,7 @@ trait PersistenceEffectorConfig[S, E, M] {
    * @return
    *   Persistence ID string
    */
-  def persistenceId: String
+  def persistenceId: PersistenceId
 
   /**
    * Get the initial state for the effector. This state is used when no previous state exists.
@@ -232,7 +232,7 @@ trait PersistenceEffectorConfig[S, E, M] {
 object PersistenceEffectorConfig {
 
   final case class Impl[S, E, M](
-    persistenceId: String,
+    persistenceId: PersistenceId,
     initialState: S,
     applyEvent: java.util.function.BiFunction[S, E, S],
     persistenceMode: PersistenceMode,
@@ -250,7 +250,7 @@ object PersistenceEffectorConfig {
       }
 
       SPersistenceEffectorConfig.create(
-        persistenceId = persistenceId,
+        persistenceId = persistenceId.toScala,
         initialState = initialState,
         applyEvent = (s: S, e: E) => applyEvent.apply(s, e),
         persistenceMode = scalaPersistenceMode,
@@ -306,7 +306,7 @@ object PersistenceEffectorConfig {
   }
 
   def unapply[S, E, M](self: PersistenceEffectorConfig[S, E, M]): Option[(
-    String,
+    PersistenceId,
     S,
     java.util.function.BiFunction[S, E, S],
     PersistenceMode,
@@ -331,10 +331,10 @@ object PersistenceEffectorConfig {
     )
 
   /**
-   * Create a PersistenceEffectorConfig with minimal required parameters. Uses default values for optional parameters.
+   * Create a PersistenceEffectorConfig with a PersistenceId instance and minimum parameters.
    *
    * @param persistenceId
-   *   Persistence ID for the effector
+   *   PersistenceId instance for the effector
    * @param initialState
    *   Initial state
    * @param applyEvent
@@ -349,7 +349,7 @@ object PersistenceEffectorConfig {
    *   PersistenceEffectorConfig instance
    */
   def create[S, E, M](
-    persistenceId: String,
+    persistenceId: PersistenceId,
     initialState: S,
     applyEvent: java.util.function.BiFunction[S, E, S]): PersistenceEffectorConfig[S, E, M] =
     create(
@@ -365,10 +365,10 @@ object PersistenceEffectorConfig {
     )
 
   /**
-   * Create a PersistenceEffectorConfig with all parameters specified.
+   * Create a PersistenceEffectorConfig with a PersistenceId instance and all parameters.
    *
    * @param persistenceId
-   *   Persistence ID for the effector
+   *   PersistenceId instance for the effector
    * @param initialState
    *   Initial state
    * @param applyEvent
@@ -395,7 +395,7 @@ object PersistenceEffectorConfig {
    *   PersistenceEffectorConfig instance
    */
   def create[S, E, M](
-    persistenceId: String,
+    persistenceId: PersistenceId,
     initialState: S,
     applyEvent: java.util.function.BiFunction[S, E, S],
     persistenceMode: PersistenceMode,

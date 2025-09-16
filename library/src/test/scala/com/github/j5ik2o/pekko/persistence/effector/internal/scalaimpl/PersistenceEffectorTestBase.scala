@@ -71,7 +71,7 @@ abstract class PersistenceEffectorTestBase
 
       val config =
         PersistenceEffectorConfig.create[TestState, TestEvent, TestMessage](
-          persistenceId = persistenceId,
+          persistenceId = PersistenceId.ofUniqueId(persistenceId),
           initialState = initialState,
           applyEvent = (state, event) => state.applyEvent(event),
           stashSize = Int.MaxValue,
@@ -108,7 +108,7 @@ abstract class PersistenceEffectorTestBase
 
       val config =
         PersistenceEffectorConfig.create[TestState, TestEvent, TestMessage](
-          persistenceId = persistenceId,
+          persistenceId = PersistenceId.ofUniqueId(persistenceId),
           initialState = initialState,
           applyEvent = (state, event) => state.applyEvent(event),
           stashSize = Int.MaxValue,
@@ -146,7 +146,7 @@ abstract class PersistenceEffectorTestBase
 
       val config =
         PersistenceEffectorConfig.create[TestState, TestEvent, TestMessage](
-          persistenceId = persistenceId,
+          persistenceId = PersistenceId.ofUniqueId(persistenceId),
           initialState = initialState,
           applyEvent = (state, event) => state.applyEvent(event),
           stashSize = Int.MaxValue,
@@ -188,7 +188,7 @@ abstract class PersistenceEffectorTestBase
       // First configuration
       val config1 =
         PersistenceEffectorConfig.create[TestState, TestEvent, TestMessage](
-          persistenceId = persistenceId,
+          persistenceId = PersistenceId.ofUniqueId(persistenceId),
           initialState = initialState,
           applyEvent = (state, event) => state.applyEvent(event),
           stashSize = Int.MaxValue,
@@ -226,7 +226,7 @@ abstract class PersistenceEffectorTestBase
       // Second configuration (using the same persistenceID)
       val config2 =
         PersistenceEffectorConfig.create[TestState, TestEvent, TestMessage](
-          persistenceId = persistenceId,
+          persistenceId = PersistenceId.ofUniqueId(persistenceId),
           initialState = initialState, // Pass the same initial state, but it should be restored
           applyEvent = (state, event) => state.applyEvent(event),
           stashSize = Int.MaxValue,
@@ -284,7 +284,7 @@ abstract class PersistenceEffectorTestBase
 
       val config =
         PersistenceEffectorConfig.create[TestState, TestEvent, TestMessage](
-          persistenceId = persistenceId,
+          persistenceId = PersistenceId.ofUniqueId(persistenceId),
           initialState = initialState,
           applyEvent = (state, event) => state.applyEvent(event),
           stashSize = Int.MaxValue,
@@ -347,7 +347,7 @@ abstract class PersistenceEffectorTestBase
 
       val config =
         PersistenceEffectorConfig.create[TestState, TestEvent, TestMessage](
-          persistenceId = persistenceId,
+          persistenceId = PersistenceId.ofUniqueId(persistenceId),
           initialState = initialState,
           applyEvent = (state, event) => state.applyEvent(event),
           stashSize = Int.MaxValue,
@@ -408,7 +408,7 @@ abstract class PersistenceEffectorTestBase
 
       val config =
         PersistenceEffectorConfig.create[TestState, TestEvent, TestMessage](
-          persistenceId = persistenceId,
+          persistenceId = PersistenceId.ofUniqueId(persistenceId),
           initialState = initialState,
           applyEvent = (state, event) => state.applyEvent(event),
           stashSize = Int.MaxValue,
@@ -469,7 +469,7 @@ abstract class PersistenceEffectorTestBase
 
       // Configuration to create snapshots every 2 events and keep only the latest 2
       val config = PersistenceEffectorConfig.create[TestState, TestEvent, TestMessage](
-        persistenceId = persistenceId,
+        persistenceId = PersistenceId.ofUniqueId(persistenceId),
         initialState = initialState,
         applyEvent = (state, event) => state.applyEvent(event),
         stashSize = Int.MaxValue,

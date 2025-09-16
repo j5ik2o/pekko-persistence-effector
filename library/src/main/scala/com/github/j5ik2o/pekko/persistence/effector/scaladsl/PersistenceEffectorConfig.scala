@@ -19,7 +19,15 @@ trait PersistenceEffectorConfig[S, E, M] {
    * @return
    *   Persistence ID string
    */
-  def persistenceId: String
+  def persistenceIdAsString: String
+
+  /**
+   * Get the persistence ID as a PersistenceId instance.
+   *
+   * @return
+   *   PersistenceId instance
+   */
+  def persistenceId: PersistenceId
 
   /**
    * Get the initial state for the effector. This state is used when no previous state exists.
@@ -215,7 +223,7 @@ trait PersistenceEffectorConfig[S, E, M] {
  */
 object PersistenceEffectorConfig {
   private final case class Impl[S, E, M](
-    persistenceId: String,
+    persistenceId: PersistenceId,
     initialState: S,
     applyEvent: (S, E) => S,
     persistenceMode: PersistenceMode,
@@ -225,6 +233,7 @@ object PersistenceEffectorConfig {
     backoffConfig: Option[BackoffConfig],
     messageConverter: MessageConverter[S, E, M],
   ) extends PersistenceEffectorConfig[S, E, M] {
+    override def persistenceIdAsString: String = persistenceId.asString
     override def wrapPersistedEvents: Seq[E] => M = messageConverter.wrapPersistedEvents
     override def wrapPersistedSnapshot: S => M = messageConverter.wrapPersistedSnapshot
     override def wrapRecoveredState: S => M = messageConverter.wrapRecoveredState
@@ -266,7 +275,7 @@ object PersistenceEffectorConfig {
   )] =
     Some(
       (
-        self.persistenceId,
+        self.persistenceIdAsString,
         self.initialState,
         self.applyEvent,
         self.persistenceMode,
@@ -308,7 +317,7 @@ object PersistenceEffectorConfig {
    *   PersistenceEffectorConfig instance
    */
   def create[S, E, M](
-    persistenceId: String,
+    persistenceId: PersistenceId,
     initialState: S,
     applyEvent: (S, E) => S,
     persistenceMode: PersistenceMode = PersistenceMode.Persisted,

@@ -184,7 +184,7 @@ object PersistenceEffector {
     context: ActorContext[M],
   ): Behavior[M] = {
     val config = PersistenceEffectorConfig.create(
-      persistenceId = persistenceId,
+      persistenceId = PersistenceId.ofUniqueId(persistenceId),
       initialState = initialState,
       applyEvent = applyEvent,
       persistenceMode = PersistenceMode.Persisted,
@@ -236,7 +236,7 @@ object PersistenceEffector {
     context: ActorContext[M],
   ): Behavior[M] = {
     val config = PersistenceEffectorConfig.create(
-      persistenceId = persistenceId,
+      persistenceId = PersistenceId.ofUniqueId(persistenceId),
       initialState = initialState,
       applyEvent = applyEvent,
       persistenceMode = PersistenceMode.Ephemeral,
@@ -385,7 +385,7 @@ object PersistenceEffector {
 
   private def spawnEventStoreActor[M, E, S](
     context: ActorContext[M],
-    persistenceId: String,
+    persistenceId: PersistenceId,
     initialState: S,
     applyEvent: (S, E) => S,
     recoveryAdapter: ActorRef[RecoveryDone[S]],
@@ -394,13 +394,13 @@ object PersistenceEffector {
     context
       .actorOf(
         PersistenceStoreActor.props(
-          persistenceId,
+          persistenceId.asString,
           initialState,
           applyEvent,
           recoveryAdapter,
           backoffConfig,
         ),
-        s"effector-$persistenceId",
+        s"effector-${persistenceId.asString}",
       )
       .toTyped
   }
