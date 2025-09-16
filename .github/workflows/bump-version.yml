@@ -25,35 +25,17 @@ jobs:
         if git tag -l | grep -q .; then
           LATEST_TAG=$(git describe --abbrev=0 --tags)
           echo "latest-tag = $LATEST_TAG"
-          # 最新タグから現在までの変更をカウント
-          COUNT=$(git log $LATEST_TAG..HEAD --pretty=format:"%s" --no-merges \
-            --grep='^build:' \
-            --grep='^ci:' \
-            --grep='^feat:' \
-            --grep='^fix:' \
-            --grep='^docs:' \
-            --grep='^style:' \
-            --grep='^refactor:' \
-            --grep='^perf:' \
-            --grep='^test:' \
-            --grep='^revert:' \
-            --grep='^chore:' | awk 'END{print NR}')
+          # 最新タグから現在までの変更をカウント（BREAKING CHANGEも含む）
+          COUNT=$(git log $LATEST_TAG..HEAD --pretty=format:"%s %b" --no-merges | \
+            grep -E '^(build:|ci:|feat:|fix:|docs:|style:|refactor:|perf:|test:|revert:|chore:|BREAKING CHANGE:)' | \
+            awk 'END{print NR}')
         else
           echo "No tags found - using initial commit as base"
-          # 初期コミットから現在までの変更をカウント（初回実行時）
+          # 初期コミットから現在までの変更をカウント（初回実行時、BREAKING CHANGEも含む）
           FIRST_COMMIT=$(git rev-list --max-parents=0 HEAD)
-          COUNT=$(git log $FIRST_COMMIT..HEAD --pretty=format:"%s" --no-merges \
-            --grep='^build:' \
-            --grep='^ci:' \
-            --grep='^feat:' \
-            --grep='^fix:' \
-            --grep='^docs:' \
-            --grep='^style:' \
-            --grep='^refactor:' \
-            --grep='^perf:' \
-            --grep='^test:' \
-            --grep='^revert:' \
-            --grep='^chore:' | awk 'END{print NR}')
+          COUNT=$(git log $FIRST_COMMIT..HEAD --pretty=format:"%s %b" --no-merges | \
+            grep -E '^(build:|ci:|feat:|fix:|docs:|style:|refactor:|perf:|test:|revert:|chore:|BREAKING CHANGE:)' | \
+            awk 'END{print NR}')
           # 初回は必ず1以上にしてタグ付けができるようにする
           if [ "$COUNT" -eq "0" ]; then
             COUNT=1
@@ -71,6 +53,15 @@ jobs:
       with:
         github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         default_bump: patch
+        release_branches: main,master
+        pre_release_branches: develop,dev
+        custom_release_rules: |
+          breaking:major:BREAKING CHANGE,
+          feat:minor:Features,
+          fix:patch:Bug Fixes,
+          perf:patch:Performance Improvements,
+          refactor:patch:Code Refactoring,
+          chore:patch:Chores
       if: steps.changes.outputs.count > 0
     - name: Create a GitHub release
       uses: actions/create-release@v1
