@@ -3,17 +3,20 @@ package com.github.j5ik2o.pekko.persistence.effector.scaladsl
 /**
  * Represents a unique identifier for persistent actors.
  *
- * This is a library-specific implementation that provides similar functionality
- * to Pekko's PersistenceId but without depending on pekko-persistence-typed.
+ * This is a library-specific implementation that provides similar functionality to Pekko's PersistenceId but without
+ * depending on pekko-persistence-typed.
  *
- * @param entityTypeHint The optional entity type hint
- * @param entityId The entity identifier
- * @param separator The separator used (defaults to DefaultSeparator)
+ * @param entityTypeHint
+ *   The optional entity type hint
+ * @param entityId
+ *   The entity identifier
+ * @param separator
+ *   The separator used (defaults to DefaultSeparator)
  */
 final case class PersistenceId private[effector] (
   entityTypeHint: Option[String],
   entityId: String,
-  separator: String = PersistenceId.DefaultSeparator
+  separator: String = PersistenceId.DefaultSeparator,
 ) {
   require(entityId.nonEmpty, "entityId cannot be empty")
   require(separator.nonEmpty, "separator cannot be empty")
@@ -24,7 +27,8 @@ final case class PersistenceId private[effector] (
   /**
    * Gets the complete persistence identifier string.
    *
-   * @return The complete persistence identifier
+   * @return
+   *   The complete persistence identifier
    */
   def asString: String = entityTypeHint match {
     case None => entityId
@@ -34,23 +38,27 @@ final case class PersistenceId private[effector] (
   /**
    * Checks if this persistence id contains a type hint.
    *
-   * @return true if entityTypeHint is present, false otherwise
+   * @return
+   *   true if entityTypeHint is present, false otherwise
    */
   def hasTypeHint: Boolean = entityTypeHint.isDefined
 }
 
 object PersistenceId {
+
   /**
-   * The default separator used between entity type hint and entity id.
-   * This follows the same convention as Pekko's PersistenceId.
+   * The default separator used between entity type hint and entity id. This follows the same convention as Pekko's
+   * PersistenceId.
    */
   val DefaultSeparator: String = "|"
 
   /**
    * Creates a PersistenceId from a complete unique identifier string.
    *
-   * @param id The complete persistence identifier
-   * @return A new PersistenceId instance
+   * @param id
+   *   The complete persistence identifier
+   * @return
+   *   A new PersistenceId instance
    */
   def ofUniqueId(id: String): PersistenceId = {
     require(id.nonEmpty, "id cannot be empty")
@@ -60,7 +68,7 @@ object PersistenceId {
     } else {
       PersistenceId(
         entityTypeHint = Some(id.substring(0, idx)),
-        entityId = id.substring(idx + 1)
+        entityId = id.substring(idx + 1),
       )
     }
   }
@@ -68,40 +76,49 @@ object PersistenceId {
   /**
    * Creates a PersistenceId by concatenating entityTypeHint and entityId with the default separator.
    *
-   * @param entityTypeHint The entity type hint
-   * @param entityId The entity identifier
-   * @return A new PersistenceId instance
+   * @param entityTypeHint
+   *   The entity type hint
+   * @param entityId
+   *   The entity identifier
+   * @return
+   *   A new PersistenceId instance
    */
   def of(entityTypeHint: String, entityId: String): PersistenceId = {
     require(entityTypeHint.nonEmpty, "entityTypeHint cannot be empty")
     PersistenceId(
       entityTypeHint = Some(entityTypeHint),
-      entityId = entityId
+      entityId = entityId,
     )
   }
 
   /**
    * Creates a PersistenceId by concatenating entityTypeHint and entityId with a custom separator.
    *
-   * @param entityTypeHint The entity type hint
-   * @param entityId The entity identifier
-   * @param separator The custom separator to use
-   * @return A new PersistenceId instance
+   * @param entityTypeHint
+   *   The entity type hint
+   * @param entityId
+   *   The entity identifier
+   * @param separator
+   *   The custom separator to use
+   * @return
+   *   A new PersistenceId instance
    */
   def of(entityTypeHint: String, entityId: String, separator: String): PersistenceId = {
     require(entityTypeHint.nonEmpty, "entityTypeHint cannot be empty")
     PersistenceId(
       entityTypeHint = Some(entityTypeHint),
       entityId = entityId,
-      separator = separator
+      separator = separator,
     )
   }
 
   /**
    * Extracts the entity type hint from a persistence id string.
    *
-   * @param persistenceId The persistence id string
-   * @return The entity type hint if found, empty string otherwise
+   * @param persistenceId
+   *   The persistence id string
+   * @return
+   *   The entity type hint if found, empty string otherwise
    */
   def extractEntityTypeHint(persistenceId: String): String =
     ofUniqueId(persistenceId).entityTypeHint.getOrElse("")
@@ -109,8 +126,10 @@ object PersistenceId {
   /**
    * Extracts the entity id from a persistence id string.
    *
-   * @param persistenceId The persistence id string
-   * @return The entity id if found, the full string otherwise
+   * @param persistenceId
+   *   The persistence id string
+   * @return
+   *   The entity id if found, the full string otherwise
    */
   def extractEntityId(persistenceId: String): String =
     ofUniqueId(persistenceId).entityId
