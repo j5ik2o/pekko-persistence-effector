@@ -60,7 +60,7 @@ object Dependencies {
   }
 
   object circe {
-    val core = "io.circe" %% "circe-core" % "0.14.14"
+    val core = "io.circe" %% "circe-core" % "0.14.15"
     val generic = "io.circe" %% "circe-generic" % "0.14.15"
     val parser = "io.circe" %% "circe-parser" % "0.14.15"
   }
