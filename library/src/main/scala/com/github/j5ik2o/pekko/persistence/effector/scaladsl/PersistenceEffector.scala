@@ -7,9 +7,12 @@ import com.github.j5ik2o.pekko.persistence.effector.internal.scalaimpl.{
   InMemoryEffector,
   PersistenceStoreActor,
 }
+import org.apache.pekko.actor.ActorPath
 import org.apache.pekko.actor.typed.scaladsl.{ActorContext, Behaviors}
 import org.apache.pekko.actor.typed.{ActorRef, Behavior}
 
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import scala.compiletime.asMatchable
 
 /**
@@ -144,6 +147,15 @@ trait PersistenceEffector[S, E, M] {
 object PersistenceEffector {
   // Message for handling recovery completion internally
   private case class RecoveryCompletedInternal[S](state: S, sequenceNr: Long)
+
+  private[effector] def persistenceStoreActorName(persistenceId: String): String = {
+    val actorName = s"effector-${URLEncoder.encode(persistenceId, StandardCharsets.UTF_8)}"
+    require(
+      ActorPath.isValidPathElement(actorName),
+      s"Generated persistence store actor name is invalid: $actorName",
+    )
+    actorName
+  }
 
   /**
    * Create a PersistenceEffector in persisted mode.
@@ -400,7 +412,7 @@ object PersistenceEffector {
           recoveryAdapter,
           backoffConfig,
         ),
-        s"effector-${persistenceId.asString}",
+        persistenceStoreActorName(persistenceId.asString),
       )
       .toTyped
   }
