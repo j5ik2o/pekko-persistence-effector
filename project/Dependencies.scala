@@ -45,7 +45,7 @@ object Dependencies {
   }
 
   object scalameta {
-    val munit = "org.scalameta" %% "munit" % "1.3.2"
+    val munit = "org.scalameta" %% "munit" % "1.3.3"
   }
 
   object scalatest {
