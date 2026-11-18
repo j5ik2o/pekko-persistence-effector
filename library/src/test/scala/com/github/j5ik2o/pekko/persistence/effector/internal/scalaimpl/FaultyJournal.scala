@@ -6,7 +6,7 @@ import org.apache.pekko.persistence.{AtomicWrite, PersistentRepr}
 
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.immutable
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -18,6 +18,16 @@ object FaultyJournal {
   val FailValue: String = "fail"
 
   private val store = new ConcurrentHashMap[String, Vector[PersistentRepr]]()
+  private val rejectionGates = new ConcurrentHashMap[String, Promise[Unit]]()
+
+  def holdRejection(persistenceId: String): () => Unit = {
+    val gate = Promise[Unit]()
+    rejectionGates.put(persistenceId, gate)
+    () => {
+      gate.success(())
+      rejectionGates.remove(persistenceId, gate)
+    }
+  }
 
   def storedEvents(persistenceId: String): Vector[(Long, Any)] =
     Option(store.get(persistenceId)).getOrElse(Vector.empty).map(repr => (repr.sequenceNr, repr.payload))
@@ -38,14 +48,20 @@ final class FaultyJournal extends AsyncWriteJournal {
     if (messages.exists(hasPayload(_, FailValue))) {
       Future.failed(new RuntimeException("simulated journal failure"))
     } else {
-      Future.successful(messages.map { write =>
-        if (hasPayload(write, RejectValue)) {
-          Failure(new IllegalArgumentException("simulated journal rejection"))
-        } else {
-          store.merge(write.persistenceId, write.payload.toVector, _ ++ _)
-          Success(())
+      val rejectionGate = messages
+        .find(hasPayload(_, RejectValue))
+        .flatMap(write => Option(rejectionGates.remove(write.persistenceId)))
+        .fold(Future.unit)(_.future)
+      rejectionGate.map { _ =>
+        messages.map { write =>
+          if (hasPayload(write, RejectValue)) {
+            Failure(new IllegalArgumentException("simulated journal rejection"))
+          } else {
+            store.merge(write.persistenceId, write.payload.toVector, _ ++ _)
+            Success(())
+          }
         }
-      })
+      }(using ExecutionContext.parasitic)
     }
 
   override def asyncDeleteMessagesTo(persistenceId: String, toSequenceNr: Long): Future[Unit] =

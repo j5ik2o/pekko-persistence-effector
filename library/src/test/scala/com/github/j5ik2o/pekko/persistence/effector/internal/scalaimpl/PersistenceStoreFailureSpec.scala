@@ -3,7 +3,7 @@ package com.github.j5ik2o.pekko.persistence.effector.internal.scalaimpl
 import com.github.j5ik2o.pekko.persistence.effector.scaladsl.*
 import com.github.j5ik2o.pekko.persistence.effector.{TestConfig, TestEvent, TestState}
 import com.typesafe.config.ConfigFactory
-import org.apache.pekko.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
+import org.apache.pekko.actor.testkit.typed.scaladsl.{LoggingTestKit, ScalaTestWithActorTestKit, TestProbe}
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
 import org.apache.pekko.actor.typed.{ActorRef, Behavior, ChildFailed, SupervisorStrategy}
 import org.scalatest.wordspec.AnyWordSpecLike
@@ -74,14 +74,27 @@ class PersistenceStoreFailureSpec
     (refProbe.receiveMessage(), failureProbe)
   }
 
+  private def rejectWithStashedCommand(
+    persistenceId: PersistenceId,
+    ref: ActorRef[Command],
+    replyTo: ActorRef[String],
+  ): Unit = {
+    val releaseRejection = FaultyJournal.holdRejection(persistenceId.asString)
+    try
+      LoggingTestKit.debug("Stashing message: Persist(stashed-behind-rejection,").expect {
+        ref ! Persist(FaultyJournal.RejectValue, replyTo)
+        ref ! Persist("stashed-behind-rejection", replyTo)
+      }
+    finally releaseRejection()
+  }
+
   "An actor using a persisted PersistenceEffector" should {
     "fail when the journal rejects an event, and drop the commands stashed while waiting" in {
       val persistenceId = newPersistenceId()
       val (ref, failureProbe) = spawnSupervised(entity(persistenceId))
       val replyProbe = createTestProbe[String]()
 
-      ref ! Persist(FaultyJournal.RejectValue, replyProbe.ref)
-      ref ! Persist("stashed-behind-rejection", replyProbe.ref)
+      rejectWithStashedCommand(persistenceId, ref, replyProbe.ref)
 
       val rejected = failureProbe.expectMessageType[PersistEventRejectedException]
       rejected.persistenceId shouldBe persistenceId
@@ -146,8 +159,7 @@ class PersistenceStoreFailureSpec
       )
       startProbe.receiveMessage()
 
-      ref ! Persist(FaultyJournal.RejectValue, replyProbe.ref)
-      ref ! Persist("stashed-behind-rejection", replyProbe.ref)
+      rejectWithStashedCommand(persistenceId, ref, replyProbe.ref)
       startProbe.receiveMessage()
 
       ref ! Persist("after-restart", replyProbe.ref)

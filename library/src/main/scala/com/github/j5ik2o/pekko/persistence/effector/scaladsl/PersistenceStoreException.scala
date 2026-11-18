@@ -24,7 +24,7 @@ final class PersistEventRejectedException(
   cause: Throwable,
 ) extends PersistenceStoreException(
     s"Journal rejected event [$eventType] with sequence number [$sequenceNr] for persistenceId " +
-    s"[${persistenceId.asString}]. The event was not stored.",
+      s"[${persistenceId.asString}]. The event was not stored.",
     Some(cause),
   )
 
@@ -38,13 +38,13 @@ final class PersistEventFailedException(
   cause: Throwable,
 ) extends PersistenceStoreException(
     s"Journal failed to persist event [$eventType] with sequence number [$sequenceNr] for persistenceId " +
-    s"[${persistenceId.asString}].",
+      s"[${persistenceId.asString}].",
     Some(cause),
   )
 
 /**
- * The persistence store actor stopped without reporting a failed write, for example because recovery failed. The
- * store actor logs the original error.
+ * The persistence store actor stopped without reporting a failed write, for example because recovery failed. The store
+ * actor logs the original error.
  */
 final class PersistenceStoreStoppedException(val persistenceId: PersistenceId, cause: Option[Throwable])
   extends PersistenceStoreException(
