@@ -30,7 +30,7 @@ private[effector] object PersistenceStoreProtocol {
    * @tparam E
    *   Type of event
    */
-  final case class PersistSingleEvent[S, E](event: E, replyTo: ActorRef[PersistSingleEventSucceeded[S, E]])
+  final case class PersistSingleEvent[S, E](event: E, replyTo: ActorRef[PersistEventsReply[S, E]])
     extends PersistenceCommand[S, E]
 
   /**
@@ -47,7 +47,7 @@ private[effector] object PersistenceStoreProtocol {
    */
   final case class PersistMultipleEvents[S, E](
     events: Seq[E],
-    replyTo: ActorRef[PersistMultipleEventsSucceeded[S, E]],
+    replyTo: ActorRef[PersistEventsReply[S, E]],
   ) extends PersistenceCommand[S, E]
 
   /**
@@ -93,6 +93,11 @@ private[effector] object PersistenceStoreProtocol {
   sealed trait PersistenceReply[S, E]
 
   /**
+   * Base trait for replies to event persistence commands.
+   */
+  sealed trait PersistEventsReply[S, E] extends PersistenceReply[S, E]
+
+  /**
    * Reply for successful persistence of a single event.
    *
    * @param event
@@ -102,7 +107,7 @@ private[effector] object PersistenceStoreProtocol {
    * @tparam E
    *   Type of event
    */
-  final case class PersistSingleEventSucceeded[S, E](event: E) extends PersistenceReply[S, E]
+  final case class PersistSingleEventSucceeded[S, E](event: E) extends PersistEventsReply[S, E]
 
   /**
    * Reply for successful persistence of multiple events.
@@ -114,7 +119,23 @@ private[effector] object PersistenceStoreProtocol {
    * @tparam E
    *   Type of event
    */
-  final case class PersistMultipleEventsSucceeded[S, E](events: Seq[E]) extends PersistenceReply[S, E]
+  final case class PersistMultipleEventsSucceeded[S, E](events: Seq[E]) extends PersistEventsReply[S, E]
+
+  /**
+   * Reply sent when the journal rejected or failed to write an event. The persistence store actor stops after sending
+   * it.
+   */
+  sealed trait PersistEventsFailure[S, E] extends PersistEventsReply[S, E] {
+    def sequenceNr: Long
+    def eventType: String
+    def cause: Throwable
+  }
+
+  final case class PersistEventRejected[S, E](sequenceNr: Long, eventType: String, cause: Throwable)
+    extends PersistEventsFailure[S, E]
+
+  final case class PersistEventFailed[S, E](sequenceNr: Long, eventType: String, cause: Throwable)
+    extends PersistEventsFailure[S, E]
 
   /**
    * Base trait for snapshot persistence replies.
