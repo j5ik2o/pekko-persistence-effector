@@ -19,8 +19,8 @@ object PersistenceStoreFailureSpec {
 }
 
 /**
- * The actor that uses a persisted PersistenceEffector must fail, not wait forever, when the journal rejects or fails
- * a write, and when recovery fails.
+ * The actor that uses a persisted PersistenceEffector must fail, not wait forever, when the journal rejects or fails a
+ * write, and when recovery fails.
  */
 class PersistenceStoreFailureSpec
   extends ScalaTestWithActorTestKit(
@@ -29,7 +29,8 @@ class PersistenceStoreFailureSpec
   import PersistenceStoreFailureSpec.*
   import Command.*
 
-  private def newPersistenceId(): PersistenceId = PersistenceId.ofUniqueId(s"store-failure-${java.util.UUID.randomUUID()}")
+  private def newPersistenceId(): PersistenceId =
+    PersistenceId.ofUniqueId(s"store-failure-${java.util.UUID.randomUUID()}")
 
   private def entity(
     persistenceId: PersistenceId,
@@ -82,7 +83,10 @@ class PersistenceStoreFailureSpec
       ref ! Persist(FaultyJournal.RejectValue, replyProbe.ref)
       ref ! Persist("stashed-behind-rejection", replyProbe.ref)
 
-      failureProbe.receiveMessage()
+      val rejected = failureProbe.expectMessageType[PersistEventRejectedException]
+      rejected.persistenceId shouldBe persistenceId
+      rejected.sequenceNr shouldBe 1L
+      rejected.getCause.getMessage shouldBe "simulated journal rejection"
       replyProbe.expectNoMessage(100.millis)
       FaultyJournal.storedEvents(persistenceId.asString) shouldBe empty
     }
@@ -94,7 +98,10 @@ class PersistenceStoreFailureSpec
 
       ref ! Persist(FaultyJournal.FailValue, replyProbe.ref)
 
-      failureProbe.receiveMessage()
+      val failed = failureProbe.expectMessageType[PersistEventFailedException]
+      failed.persistenceId shouldBe persistenceId
+      failed.sequenceNr shouldBe 1L
+      failed.getCause.getMessage shouldBe "simulated journal failure"
       FaultyJournal.storedEvents(persistenceId.asString) shouldBe empty
     }
 
@@ -105,7 +112,7 @@ class PersistenceStoreFailureSpec
 
       ref ! Persist(FaultyJournal.RejectValue, createTestProbe[String]().ref)
 
-      failureProbe.receiveMessage()
+      failureProbe.expectMessageType[PersistEventRejectedException].persistenceId shouldBe persistenceId
     }
 
     "fail when recovery fails instead of waiting for the recovery result" in {
@@ -122,19 +129,30 @@ class PersistenceStoreFailureSpec
       }
       val (_, failureProbe) = spawnSupervised(entity(persistenceId, applyEvent = throwingApply))
 
-      failureProbe.receiveMessage()
+      failureProbe.expectMessageType[PersistenceStoreStoppedException].persistenceId shouldBe persistenceId
     }
 
-    "reuse the rejected sequence number after a restart, leaving no gap" in {
+    "restart under a restart supervisor and reuse the rejected sequence number, leaving no gap" in {
       val persistenceId = newPersistenceId()
       val replyProbe = createTestProbe[String]()
+      val startProbe = createTestProbe[Unit]()
       val ref = spawn(
-        Behaviors.supervise(entity(persistenceId)).onFailure[Exception](SupervisorStrategy.restart),
+        Behaviors
+          .supervise(Behaviors.setup[Command] { _ =>
+            startProbe.ref ! ()
+            entity(persistenceId)
+          })
+          .onFailure[PersistenceStoreException](SupervisorStrategy.restart),
       )
+      startProbe.receiveMessage()
 
       ref ! Persist(FaultyJournal.RejectValue, replyProbe.ref)
+      ref ! Persist("stashed-behind-rejection", replyProbe.ref)
+      startProbe.receiveMessage()
+
       ref ! Persist("after-restart", replyProbe.ref)
       replyProbe.expectMessage("after-restart")
+      startProbe.expectNoMessage(200.millis)
       FaultyJournal.storedEvents(persistenceId.asString) shouldBe Vector(1L -> TestEvent.TestEventA("after-restart"))
     }
   }
