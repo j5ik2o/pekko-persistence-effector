@@ -5,8 +5,7 @@ package com.github.j5ik2o.pekko.persistence.effector.scaladsl
  * The store can no longer persist events, so the actor fails instead of waiting for a reply that never comes. Commands
  * that were stashed while waiting are discarded.
  *
- * Treat it as a defect: let the actor stop, or restart it so that it recovers from the journal. Resuming keeps the
- * actor without a store.
+ * Let the actor stop or restart it so that it recovers from the journal. Resuming leaves the actor without a store.
  */
 sealed abstract class PersistenceStoreException(message: String, cause: Option[Throwable])
   extends RuntimeException(message, cause.orNull) {
@@ -15,7 +14,8 @@ sealed abstract class PersistenceStoreException(message: String, cause: Option[T
 
 /**
  * The journal rejected the event, for example because it could not be serialized. The event was not stored, so the
- * sequence number is used again after recovery.
+ * sequence number is used again after recovery. If a defect in the event or serializer caused the rejection, fix the
+ * defect before retrying.
  */
 final class PersistEventRejectedException(
   val persistenceId: PersistenceId,
