@@ -2,13 +2,17 @@ package com.github.j5ik2o.pekko.persistence.effector.internal.scalaimpl
 
 import com.github.j5ik2o.pekko.persistence.effector.internal.scalaimpl.PersistenceStoreProtocol.*
 import com.github.j5ik2o.pekko.persistence.effector.scaladsl.{
+  PersistEventFailedException,
+  PersistEventRejectedException,
   PersistenceEffector,
   PersistenceEffectorConfig,
   PersistenceId,
+  PersistenceStoreException,
+  PersistenceStoreStoppedException,
   RetentionCriteria,
 }
 import org.apache.pekko.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer}
-import org.apache.pekko.actor.typed.{ActorRef, Behavior}
+import org.apache.pekko.actor.typed.{ActorRef, Behavior, ChildFailed, Signal, Terminated}
 
 import scala.compiletime.asMatchable
 
@@ -81,18 +85,30 @@ private[effector] final class DefaultPersistenceEffector[S, E, M](
     logMessage: String,
     onSuccess: T => Behavior[M],
   ): Behavior[M] =
-    Behaviors.receiveMessage { msg =>
-      ctx.log.debug("Waiting for message: {}", msg)
-      msg.asMatchable match {
-        case msg if messageMatcher(msg).isDefined =>
-          val result = messageMatcher(msg).get
-          ctx.log.debug(s"$logMessage: {}", msg)
-          stashBuffer.unstashAll(onSuccess(result))
-        case other =>
-          ctx.log.debug("Stashing message: {}", other)
-          stashBuffer.stash(other)
-          Behaviors.same
+    Behaviors
+      .receiveMessage[M] { msg =>
+        ctx.log.debug("Waiting for message: {}", msg)
+        msg.asMatchable match {
+          case failure: PersistEventsFailure[?, ?] =>
+            DefaultPersistenceEffector.failStore(ctx, stashBuffer, persistenceRef, toException(failure))
+          case msg if messageMatcher(msg).isDefined =>
+            val result = messageMatcher(msg).get
+            ctx.log.debug(s"$logMessage: {}", msg)
+            stashBuffer.unstashAll(onSuccess(result))
+          case other =>
+            ctx.log.debug("Stashing message: {}", other)
+            stashBuffer.stash(other)
+            Behaviors.same
+        }
       }
+      .receiveSignal(DefaultPersistenceEffector.onStoreStopped(ctx, stashBuffer, persistenceRef, persistenceId))
+
+  private def toException(failure: PersistEventsFailure[?, ?]): PersistenceStoreException =
+    failure match {
+      case PersistEventRejected(sequenceNr, eventType, cause) =>
+        new PersistEventRejectedException(persistenceId, sequenceNr, eventType, cause)
+      case PersistEventFailed(sequenceNr, eventType, cause) =>
+        new PersistEventFailedException(persistenceId, sequenceNr, eventType, cause)
     }
 
   /**
@@ -271,5 +287,39 @@ private[effector] final class DefaultPersistenceEffector[S, E, M](
         }
       },
     )
+  }
+}
+
+private[effector] object DefaultPersistenceEffector {
+
+  /**
+   * Fails the actor that waits on the persistence store. Unwatching drops a Terminated that is already queued for the
+   * store, so an actor restarted by its supervisor does not receive it.
+   */
+  def failStore[M](
+    ctx: ActorContext[M],
+    stashBuffer: StashBuffer[M],
+    persistenceRef: ActorRef[?],
+    exception: PersistenceStoreException,
+  ): Nothing = {
+    ctx.unwatch(persistenceRef)
+    if (stashBuffer.nonEmpty) {
+      ctx.log.warn("Discarding {} stashed messages: {}", stashBuffer.size, exception.getMessage)
+    }
+    throw exception
+  }
+
+  def onStoreStopped[M](
+    ctx: ActorContext[M],
+    stashBuffer: StashBuffer[M],
+    persistenceRef: ActorRef[?],
+    persistenceId: PersistenceId,
+  ): PartialFunction[(ActorContext[M], Signal), Behavior[M]] = {
+    case (_, terminated: Terminated) if terminated.ref == persistenceRef =>
+      val cause = terminated match {
+        case failed: ChildFailed => Some(failed.cause)
+        case _ => None
+      }
+      failStore(ctx, stashBuffer, persistenceRef, new PersistenceStoreStoppedException(persistenceId, cause))
   }
 }
