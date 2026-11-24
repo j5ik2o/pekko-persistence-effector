@@ -344,8 +344,8 @@ object PersistenceEffector {
 
     def awaitRecovery(): Behavior[M] =
       Behaviors.withStash(config.stashSize) { stashBuffer =>
-        Behaviors
-          .receiveMessagePartial[M] { msg =>
+        DefaultPersistenceEffector.failOnStoreStopped(context, stashBuffer, persistenceRef, persistenceId) {
+          Behaviors.receiveMessagePartial[M] { msg =>
             msg.asMatchable match {
               case msg: RecoveryCompletedInternal[?] =>
                 val state = msg.asInstanceOf[RecoveryCompletedInternal[S]].state
@@ -370,7 +370,7 @@ object PersistenceEffector {
                 Behaviors.same
             }
           }
-          .receiveSignal(DefaultPersistenceEffector.onStoreStopped(context, stashBuffer, persistenceRef, persistenceId))
+        }
       }
 
     awaitRecovery()

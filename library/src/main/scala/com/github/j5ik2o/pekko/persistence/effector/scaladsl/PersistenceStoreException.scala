@@ -43,8 +43,10 @@ final class PersistEventFailedException(
   )
 
 /**
- * The persistence store actor stopped without reporting a failed write, for example because recovery failed. The store
- * actor logs the original error.
+ * The persistence store actor stopped without reporting a failed write, for example because recovery failed, or because
+ * the store was stopped or killed while the actor was not waiting for a reply. The actor fails with this exception in
+ * every behavior, including the behavior returned by `onReady`; that behavior does not receive the store's `Terminated`
+ * signal. The store actor logs the original error, and the cause is set when the store failed with an exception.
  */
 final class PersistenceStoreStoppedException(val persistenceId: PersistenceId, cause: Option[Throwable])
   extends PersistenceStoreException(

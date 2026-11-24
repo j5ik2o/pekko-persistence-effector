@@ -12,7 +12,15 @@ import com.github.j5ik2o.pekko.persistence.effector.scaladsl.{
   RetentionCriteria,
 }
 import org.apache.pekko.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer}
-import org.apache.pekko.actor.typed.{ActorRef, Behavior, ChildFailed, Signal, Terminated}
+import org.apache.pekko.actor.typed.{
+  ActorRef,
+  Behavior,
+  BehaviorInterceptor,
+  ChildFailed,
+  Signal,
+  Terminated,
+  TypedActorContext,
+}
 
 import scala.compiletime.asMatchable
 
@@ -101,7 +109,6 @@ private[effector] final class DefaultPersistenceEffector[S, E, M](
             Behaviors.same
         }
       }
-      .receiveSignal(DefaultPersistenceEffector.onStoreStopped(ctx, stashBuffer, persistenceRef, persistenceId))
 
   private def toException(failure: PersistEventsFailure[?, ?]): PersistenceStoreException =
     failure match {
@@ -307,6 +314,35 @@ private[effector] object DefaultPersistenceEffector {
       ctx.log.warn("Discarding {} stashed messages: {}", stashBuffer.size, exception.getMessage)
     }
     throw exception
+  }
+
+  /**
+   * Fails the actor when the store stops, in every behavior the actor moves to: while it waits for recovery or a
+   * persist reply, and while the user's behavior runs. Other signals, including `Terminated` of actors that the user
+   * watches, pass to the intercepted behavior.
+   */
+  def failOnStoreStopped[M](
+    ctx: ActorContext[M],
+    stashBuffer: StashBuffer[M],
+    persistenceRef: ActorRef[?],
+    persistenceId: PersistenceId,
+  )(behavior: Behavior[M]): Behavior[M] = {
+    val storeStopped = onStoreStopped(ctx, stashBuffer, persistenceRef, persistenceId)
+    Behaviors.intercept(() =>
+      new BehaviorInterceptor[M, M](classOf[AnyRef].asInstanceOf[Class[M]]) {
+        override def aroundReceive(
+          context: TypedActorContext[M],
+          msg: M,
+          target: BehaviorInterceptor.ReceiveTarget[M],
+        ): Behavior[M] = target(context, msg)
+
+        override def aroundSignal(
+          context: TypedActorContext[M],
+          signal: Signal,
+          target: BehaviorInterceptor.SignalTarget[M],
+        ): Behavior[M] =
+          storeStopped.applyOrElse((ctx, signal), (_, _) => target(context, signal))
+      })(behavior)
   }
 
   def onStoreStopped[M](
