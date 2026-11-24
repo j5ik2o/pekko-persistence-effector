@@ -1,18 +1,23 @@
 package com.github.j5ik2o.pekko.persistence.effector.internal.scalaimpl
 
+import com.github.j5ik2o.pekko.persistence.effector.javadsl
 import com.github.j5ik2o.pekko.persistence.effector.scaladsl.*
 import com.github.j5ik2o.pekko.persistence.effector.{TestConfig, TestEvent, TestState}
 import com.typesafe.config.ConfigFactory
 import org.apache.pekko.actor.testkit.typed.scaladsl.{LoggingTestKit, ScalaTestWithActorTestKit, TestProbe}
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
-import org.apache.pekko.actor.typed.{ActorRef, Behavior, ChildFailed, SupervisorStrategy}
+import org.apache.pekko.actor.typed.scaladsl.adapter.*
+import org.apache.pekko.actor.typed.{ActorRef, Behavior, ChildFailed, SupervisorStrategy, Terminated}
+import org.apache.pekko.actor.{ActorKilledException, Kill, PoisonPill}
 import org.scalatest.wordspec.AnyWordSpecLike
 
+import scala.concurrent.Await
 import scala.concurrent.duration.*
 
 object PersistenceStoreFailureSpec {
   enum Command {
     case Persist(value: String, replyTo: ActorRef[String])
+    case SpawnAndStopChild(replyTo: ActorRef[String])
   }
 
   val PoisonValue: String = "poison"
@@ -36,6 +41,7 @@ class PersistenceStoreFailureSpec
     persistenceId: PersistenceId,
     applyEvent: (TestState, TestEvent) => TestState = (state, event) => state.applyEvent(event),
     backoffConfig: Option[BackoffConfig] = None,
+    onReady: PersistenceEffector[TestState, TestEvent, Command] => Behavior[Command] = active,
   ): Behavior[Command] =
     Behaviors.setup { context =>
       val config = PersistenceEffectorConfig.create[TestState, TestEvent, Command](
@@ -45,16 +51,87 @@ class PersistenceStoreFailureSpec
         persistenceMode = PersistenceMode.Persisted,
         backoffConfig = backoffConfig,
       )
-      PersistenceEffector.fromConfig(config) { case (_, effector) => active(effector) }(using context)
+      PersistenceEffector.fromConfig(config) { case (_, effector) => onReady(effector) }(using context)
     }
 
   private def active(effector: PersistenceEffector[TestState, TestEvent, Command]): Behavior[Command] =
-    Behaviors.receiveMessage { case Persist(value, replyTo) =>
+    Behaviors.receiveMessagePartial { case Persist(value, replyTo) =>
       effector.persistEvent(TestEvent.TestEventA(value)) { _ =>
         replyTo ! value
         active(effector)
       }
     }
+
+  /**
+   * Like `active`, but handles every `Terminated` by staying in the same behavior, and reports the stopped child of its
+   * own that it watches.
+   */
+  private def ignoringTerminated(
+    signalProbe: ActorRef[String],
+  )(effector: PersistenceEffector[TestState, TestEvent, Command]): Behavior[Command] =
+    Behaviors
+      .receivePartial[Command] {
+        case (_, Persist(value, replyTo)) =>
+          effector.persistEvent(TestEvent.TestEventA(value)) { _ =>
+            replyTo ! value
+            ignoringTerminated(signalProbe)(effector)
+          }
+        case (context, SpawnAndStopChild(replyTo)) =>
+          val child = context.spawn(Behaviors.stopped[Unit], "own-child")
+          context.watch(child)
+          replyTo ! "spawned"
+          Behaviors.same
+      }
+      .receiveSignal { case (_, Terminated(ref)) =>
+        signalProbe ! s"terminated:${ref.path.name}"
+        Behaviors.same
+      }
+
+  /** The same entity built with the Java DSL. */
+  private def javaEntity(persistenceId: PersistenceId, signalProbe: Option[ActorRef[String]]): Behavior[Command] = {
+    val config = javadsl.PersistenceEffectorConfig.create[TestState, TestEvent, Command](
+      javadsl.PersistenceId.ofUniqueId(persistenceId.asString),
+      TestState(),
+      (state, event) => state.applyEvent(event),
+    )
+    def javaActive(effector: javadsl.PersistenceEffector[TestState, TestEvent, Command]): Behavior[Command] = {
+      val receive = Behaviors.receiveMessagePartial[Command] { case Persist(value, replyTo) =>
+        effector.persistEvent(
+          TestEvent.TestEventA(value),
+          _ => {
+            replyTo ! value
+            javaActive(effector)
+          })
+      }
+      signalProbe.fold(receive) { probe =>
+        receive.receiveSignal { case (_, Terminated(ref)) =>
+          probe ! s"terminated:${ref.path.name}"
+          Behaviors.same
+        }
+      }
+    }
+    javadsl.PersistenceEffector.fromConfig[TestState, TestEvent, Command](config, (_, effector) => javaActive(effector))
+  }
+
+  /** Sends `message` to the persistence store actor of the actor `ref`, and waits until the store has stopped. */
+  private def stopStore(ref: ActorRef[Command], persistenceId: PersistenceId, message: Any): Unit = {
+    val store = Await.result(
+      system.toClassic
+        .actorSelection(ref.path / PersistenceEffector.persistenceStoreActorName(persistenceId.asString))
+        .resolveOne(3.seconds),
+      3.seconds,
+    )
+    val storeWatcher = createTestProbe[Nothing]()
+    store ! message
+    storeWatcher.expectTerminated(store.toTyped)
+  }
+
+  /** Waits until recovery has completed and no persist is in flight: the reply means the actor is back in `onReady`. */
+  private def awaitIdle(ref: ActorRef[Command]): Unit = {
+    val probe = createTestProbe[String]()
+    ref ! Persist("ready", probe.ref)
+    probe.expectMessage("ready")
+  }
 
   /**
    * Spawns `child` under a parent that reports the child's failure cause, like a user's supervising actor would see it.
@@ -143,6 +220,88 @@ class PersistenceStoreFailureSpec
       val (_, failureProbe) = spawnSupervised(entity(persistenceId, applyEvent = throwingApply))
 
       failureProbe.expectMessageType[PersistenceStoreStoppedException].persistenceId shouldBe persistenceId
+    }
+
+    "fail with PersistenceStoreStoppedException when the store stops while it is not waiting for a reply" in {
+      val persistenceId = newPersistenceId()
+      val (ref, failureProbe) = spawnSupervised(entity(persistenceId))
+      awaitIdle(ref)
+
+      stopStore(ref, persistenceId, PoisonPill)
+
+      val stopped = failureProbe.expectMessageType[PersistenceStoreStoppedException]
+      stopped.persistenceId shouldBe persistenceId
+      stopped.getCause shouldBe null
+    }
+
+    "fail with PersistenceStoreStoppedException carrying the cause when the store fails while idle" in {
+      val persistenceId = newPersistenceId()
+      val (ref, failureProbe) = spawnSupervised(entity(persistenceId))
+      awaitIdle(ref)
+
+      stopStore(ref, persistenceId, Kill)
+
+      val stopped = failureProbe.expectMessageType[PersistenceStoreStoppedException]
+      stopped.persistenceId shouldBe persistenceId
+      stopped.getCause shouldBe a[ActorKilledException]
+    }
+
+    "fail when the store stops while idle even if the behavior handles Terminated and stays the same" in {
+      val persistenceId = newPersistenceId()
+      val signalProbe = createTestProbe[String]()
+      val (ref, failureProbe) =
+        spawnSupervised(entity(persistenceId, onReady = ignoringTerminated(signalProbe.ref)))
+      awaitIdle(ref)
+
+      // The store's Terminated is queued in the actor before this command
+      stopStore(ref, persistenceId, PoisonPill)
+      val replyProbe = createTestProbe[String]()
+      ref ! Persist("after-store-stopped", replyProbe.ref)
+
+      failureProbe.expectMessageType[PersistenceStoreStoppedException].persistenceId shouldBe persistenceId
+      replyProbe.expectNoMessage(100.millis)
+      signalProbe.expectNoMessage(100.millis)
+    }
+
+    "pass Terminated of its own watched child to the behavior" in {
+      val persistenceId = newPersistenceId()
+      val signalProbe = createTestProbe[String]()
+      val (ref, failureProbe) =
+        spawnSupervised(entity(persistenceId, onReady = ignoringTerminated(signalProbe.ref)))
+      awaitIdle(ref)
+      val replyProbe = createTestProbe[String]()
+
+      ref ! SpawnAndStopChild(replyProbe.ref)
+
+      replyProbe.expectMessage("spawned")
+      signalProbe.expectMessage("terminated:own-child")
+      awaitIdle(ref)
+      failureProbe.expectNoMessage(100.millis)
+    }
+
+    "fail with PersistenceStoreStoppedException when the store stops while idle, with the Java DSL" in {
+      val persistenceId = newPersistenceId()
+      val (ref, failureProbe) = spawnSupervised(javaEntity(persistenceId, signalProbe = None))
+      awaitIdle(ref)
+
+      stopStore(ref, persistenceId, PoisonPill)
+
+      failureProbe.expectMessageType[PersistenceStoreStoppedException].persistenceId shouldBe persistenceId
+    }
+
+    "fail when the store stops while idle and the Java DSL behavior handles Terminated" in {
+      val persistenceId = newPersistenceId()
+      val signalProbe = createTestProbe[String]()
+      val (ref, failureProbe) = spawnSupervised(javaEntity(persistenceId, signalProbe = Some(signalProbe.ref)))
+      awaitIdle(ref)
+
+      stopStore(ref, persistenceId, PoisonPill)
+      val replyProbe = createTestProbe[String]()
+      ref ! Persist("after-store-stopped", replyProbe.ref)
+
+      failureProbe.expectMessageType[PersistenceStoreStoppedException].persistenceId shouldBe persistenceId
+      replyProbe.expectNoMessage(100.millis)
+      signalProbe.expectNoMessage(100.millis)
     }
 
     "restart under a restart supervisor and reuse the rejected sequence number, leaving no gap" in {
