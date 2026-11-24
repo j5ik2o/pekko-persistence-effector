@@ -113,13 +113,16 @@ class PersistenceStoreFailureSpec
     javadsl.PersistenceEffector.fromConfig[TestState, TestEvent, Command](config, (_, effector) => javaActive(effector))
   }
 
+  private val storeLookupTimeout: FiniteDuration =
+    (3.seconds * sys.env.get("TEST_TIME_FACTOR").fold(1.0)(_.toDouble)).toMillis.millis
+
   /** Sends `message` to the persistence store actor of the actor `ref`, and waits until the store has stopped. */
   private def stopStore(ref: ActorRef[Command], persistenceId: PersistenceId, message: Any): Unit = {
     val store = Await.result(
       system.toClassic
         .actorSelection(ref.path / PersistenceEffector.persistenceStoreActorName(persistenceId.asString))
-        .resolveOne(3.seconds),
-      3.seconds,
+        .resolveOne(storeLookupTimeout),
+      storeLookupTimeout,
     )
     val storeWatcher = createTestProbe[Nothing]()
     store ! message
@@ -253,14 +256,14 @@ class PersistenceStoreFailureSpec
         spawnSupervised(entity(persistenceId, onReady = ignoringTerminated(signalProbe.ref)))
       awaitIdle(ref)
 
-      // The store's Terminated is queued in the actor before this command
       stopStore(ref, persistenceId, PoisonPill)
+
+      // No command is sent before this check, so the actor fails while it runs its own behavior, not while it waits
+      failureProbe.expectMessageType[PersistenceStoreStoppedException].persistenceId shouldBe persistenceId
+      signalProbe.expectNoMessage(100.millis)
       val replyProbe = createTestProbe[String]()
       ref ! Persist("after-store-stopped", replyProbe.ref)
-
-      failureProbe.expectMessageType[PersistenceStoreStoppedException].persistenceId shouldBe persistenceId
       replyProbe.expectNoMessage(100.millis)
-      signalProbe.expectNoMessage(100.millis)
     }
 
     "pass Terminated of its own watched child to the behavior" in {
@@ -296,12 +299,13 @@ class PersistenceStoreFailureSpec
       awaitIdle(ref)
 
       stopStore(ref, persistenceId, PoisonPill)
+
+      // No command is sent before this check, so the actor fails while it runs its own behavior, not while it waits
+      failureProbe.expectMessageType[PersistenceStoreStoppedException].persistenceId shouldBe persistenceId
+      signalProbe.expectNoMessage(100.millis)
       val replyProbe = createTestProbe[String]()
       ref ! Persist("after-store-stopped", replyProbe.ref)
-
-      failureProbe.expectMessageType[PersistenceStoreStoppedException].persistenceId shouldBe persistenceId
       replyProbe.expectNoMessage(100.millis)
-      signalProbe.expectNoMessage(100.millis)
     }
 
     "restart under a restart supervisor and reuse the rejected sequence number, leaving no gap" in {
