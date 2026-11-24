@@ -74,6 +74,9 @@ private[effector] final class PersistenceStoreActor[S, E, M](
 
   private var recoveryState: Option[S] = Some(initialState)
 
+  // The parent waiting for the in-flight persist, told when the journal rejects or fails it
+  private var persistingReplyTo: Option[ActorRef[PersistEventsReply[S, E]]] = None
+
   override def receiveRecover: Receive = { msg =>
     msg.asMatchable match {
       case SnapshotOffer(_, snapshot) =>
@@ -102,7 +105,9 @@ private[effector] final class PersistenceStoreActor[S, E, M](
         val typedCmd = cmd.asInstanceOf[PersistSingleEvent[S, E]]
         val event = typedCmd.event
         val replyTo = typedCmd.replyTo
+        persistingReplyTo = Some(replyTo)
         persist(event) { evt =>
+          persistingReplyTo = None
           replyTo ! PersistSingleEventSucceeded(evt)
         }
       case cmd: PersistMultipleEvents[?, ?] =>
@@ -111,9 +116,11 @@ private[effector] final class PersistenceStoreActor[S, E, M](
         val events = typedCmd.events
         val replyTo = typedCmd.replyTo
         var counter = 0
+        persistingReplyTo = Some(replyTo)
         persistAll(events) { evt =>
           counter += 1
           if (counter == events.size) {
+            persistingReplyTo = None
             replyTo ! PersistMultipleEventsSucceeded(events)
           }
         }
@@ -134,8 +141,23 @@ private[effector] final class PersistenceStoreActor[S, E, M](
     }
   }
 
-  override protected def onPersistFailure(cause: Throwable, event: Any, seqNr: Long): Unit =
+  // Pekko stops this actor after onPersistFailure returns
+  override protected def onPersistFailure(cause: Throwable, event: Any, seqNr: Long): Unit = {
     super.onPersistFailure(cause, event, seqNr)
+    replyFailure(PersistEventFailed(seqNr, event.getClass.getName, cause))
+  }
+
+  // Pekko keeps the actor running after a rejection, but the parent treats a rejected event as a defect
+  override protected def onPersistRejected(cause: Throwable, event: Any, seqNr: Long): Unit = {
+    super.onPersistRejected(cause, event, seqNr)
+    replyFailure(PersistEventRejected(seqNr, event.getClass.getName, cause))
+    context.stop(self)
+  }
+
+  private def replyFailure(failure: PersistEventsFailure[S, E]): Unit = {
+    persistingReplyTo.foreach(_ ! failure)
+    persistingReplyTo = None
+  }
 
   private def waitForDeleteSnapshots(
     maxSequenceNumber: Long,
