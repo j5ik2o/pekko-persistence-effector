@@ -2,7 +2,7 @@ import Dependencies.*
 
 ThisBuild / organization := "io.github.j5ik2o"
 ThisBuild / organizationName := "io.github.j5ik2o"
-ThisBuild / scalaVersion := "3.7.2"
+ThisBuild / scalaVersion := "3.7.4"
 ThisBuild / homepage := Some(url("https://github.com/j5ik2o/pekko-persistence-effector"))
 ThisBuild / licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html"))
 ThisBuild / developers := List(
@@ -58,7 +58,7 @@ val baseSettings = Seq(
     "-feature",
     "-deprecation",
     "-unchecked",
-    "-source:future",
+    "-source:3.7",
     "-language:implicitConversions",
     "-language:higherKinds",
     "-language:postfixOps",
@@ -66,7 +66,6 @@ val baseSettings = Seq(
     "-explain",
     "-explain-types",
     "-Wunused:imports,privates",
-    "-rewrite",
     "-no-indent",
     "-experimental",
   ),
