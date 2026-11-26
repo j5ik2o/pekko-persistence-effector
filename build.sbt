@@ -67,7 +67,6 @@ val baseSettings = Seq(
     "-explain-types",
     "-Wunused:imports,privates",
     "-no-indent",
-    "-experimental",
   ),
   semanticdbEnabled := true,
   semanticdbVersion := scalafixSemanticdb.revision,
