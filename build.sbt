@@ -67,7 +67,6 @@ val baseSettings = Seq(
     "-explain-types",
     "-Wunused:imports,privates",
     "-no-indent",
-    "-experimental",
   ),
   semanticdbEnabled := true,
   semanticdbVersion := scalafixSemanticdb.revision,
@@ -103,6 +102,8 @@ lazy val example = (project in file("example"))
   .settings(
     name := "pekko-persistence-effector-example",
     publish / skip := true,
+    // 利用者と同じく -experimental なしでコンパイルし、ライブラリに -experimental が戻ったら失敗させる
+    scalacOptions -= "-experimental",
     libraryDependencies ++= Seq(
       logback.classic,
       apachePekko.slf4j,
