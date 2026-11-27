@@ -35,8 +35,15 @@ val testSettings = Seq(
     orgIq80Leveldb.leveldb % Test,
     orgFusesourceLeveldbjni.leveldbjni % Test,
   ),
-  Compile / unmanagedClasspath += Attributed.blank(fileConverter.value.toVirtualFile(
-    (baseDirectory.value / "target" / s"scala-${scalaVersion.value}" / "test-classes").toPath): xsbti.HashedVirtualFileRef),
+  // IntelliJ でのテスト実行のために Test のクラスを Compile のクラスパスへ足す（b9d9513 で入れた行）。
+  // 固定パスは sbt 1 の出力場所で、sbt 2 では Test の出力は (Test / classDirectory) の場所へ移った。
+  // また新しい checkout ではそのディレクトリがまだ無いため、sbt 2 のファイル追跡で落ちる。
+  // そこで、参照する前にディレクトリを作り、sbt が解決した Test の出力先を指す。
+  Compile / unmanagedClasspath += {
+    val dir = (Test / classDirectory).value
+    IO.createDirectory(dir)
+    Attributed.blank(fileConverter.value.toVirtualFile(dir.toPath): xsbti.HashedVirtualFileRef)
+  },
   Test / testOptions += Tests.Setup { () =>
     val journalDir = new java.io.File("target/journal")
     val snapshotDir = new java.io.File("target/snapshot")
