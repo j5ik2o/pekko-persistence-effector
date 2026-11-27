@@ -126,10 +126,4 @@ class InMemoryEffectorSpec extends PersistenceEffectorTestBase {
       applyEventCount shouldBe 1
     }
   }
-
-  // Clear InMemoryStore at the end of the test
-  override def afterAll(): Unit = {
-    InMemoryEventStore.clear()
-    super.afterAll()
-  }
 }
