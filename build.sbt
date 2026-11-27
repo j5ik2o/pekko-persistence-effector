@@ -51,10 +51,6 @@ val testSettings = Seq(
     if (!snapshotDir.exists()) snapshotDir.mkdirs()
   },
   Test / fork := true,
-  // 暫定: sbt 2 の既定の並列で、example の in-memory 系のテストが静的なインメモリのストアと
-  // target/journal をスイート間で共有して不安定になるため、並列実行を止める。
-  // 本筋の直しは別の issue: #236 (https://github.com/j5ik2o/pekko-persistence-effector/issues/236)
-  Test / parallelExecution := false,
   Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oD"),
   Test / javaOptions += s"-Djacoco-agent.destfile=target/scala-${scalaVersion.value}/jacoco/data/jacoco.exec",
   jacocoIncludes := Seq("*com.github.j5ik2o*"),
