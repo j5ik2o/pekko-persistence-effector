@@ -101,7 +101,9 @@ class InMemoryEffectorSpec extends PersistenceEffectorTestBase {
           messageConverter = messageConverter,
         )
 
-      val behavior = spawn(Behaviors.setup[TestMessage] { context =>
+      val countProbe = createTestProbe[Int]()
+
+      spawn(Behaviors.setup[TestMessage] { context =>
         PersistenceEffector.fromConfig[TestState, TestEvent, TestMessage](config) { case (state, effector) =>
           // Reset because applyEvent is called for initial state restoration
           applyEventCount = 0
@@ -113,17 +115,18 @@ class InMemoryEffectorSpec extends PersistenceEffectorTestBase {
           effector
             .asInstanceOf[InMemoryEffector[TestState, TestEvent, TestMessage]]
             .persistEvent(TestEvent.TestEventA("test-no-double")) { _ =>
-              // Define receive processing since same cannot be used as initial Behavior
-              Behaviors.receiveMessage(_ => Behaviors.same)
+              // Report the count from the actor once persistEvent has returned and this behavior starts
+              Behaviors.setup { _ =>
+                countProbe.ref ! applyEventCount
+                // Define receive processing since same cannot be used as initial Behavior
+                Behaviors.receiveMessage(_ => Behaviors.same)
+              }
             }
         }(using context)
       })
 
-      // Allow enough time for event application
-      Thread.sleep(500)
-
       // Verify that applyEvent is called only once (only during manual update)
-      applyEventCount shouldBe 1
+      countProbe.expectMessage(1)
     }
   }
 }
