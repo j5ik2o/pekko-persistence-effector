@@ -35,7 +35,15 @@ val testSettings = Seq(
     orgIq80Leveldb.leveldb % Test,
     orgFusesourceLeveldbjni.leveldbjni % Test,
   ),
-  Compile / unmanagedClasspath += baseDirectory.value / "target" / s"scala-${scalaVersion.value}" / "test-classes",
+  // IntelliJ でのテスト実行のために Test のクラスを Compile のクラスパスへ足す（b9d9513 で入れた行）。
+  // 固定パスは sbt 1 の出力場所で、sbt 2 では Test の出力は (Test / classDirectory) の場所へ移った。
+  // また新しい checkout ではそのディレクトリがまだ無いため、sbt 2 のファイル追跡で落ちる。
+  // そこで、参照する前にディレクトリを作り、sbt が解決した Test の出力先を指す。
+  Compile / unmanagedClasspath += {
+    val dir = (Test / classDirectory).value
+    IO.createDirectory(dir)
+    Attributed.blank(fileConverter.value.toVirtualFile(dir.toPath): xsbti.HashedVirtualFileRef)
+  },
   Test / testOptions += Tests.Setup { () =>
     val journalDir = new java.io.File("target/journal")
     val snapshotDir = new java.io.File("target/snapshot")
@@ -43,6 +51,10 @@ val testSettings = Seq(
     if (!snapshotDir.exists()) snapshotDir.mkdirs()
   },
   Test / fork := true,
+  // 暫定: sbt 2 の既定の並列で、example の in-memory 系のテストが静的なインメモリのストアと
+  // target/journal をスイート間で共有して不安定になるため、並列実行を止める。
+  // 本筋の直しは別の issue: #236 (https://github.com/j5ik2o/pekko-persistence-effector/issues/236)
+  Test / parallelExecution := false,
   Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oD"),
   Test / javaOptions += s"-Djacoco-agent.destfile=target/scala-${scalaVersion.value}/jacoco/data/jacoco.exec",
   jacocoIncludes := Seq("*com.github.j5ik2o*"),
@@ -78,6 +90,9 @@ lazy val root = (project in file("."))
   .settings(
     name := "pekko-persistence-effector-root",
     publish / skip := true,
+    // ルートはクラスを持たず JaCoCo の計装ディレクトリが作られないため、sbt 2 のファイル追跡が失敗する。
+    // 常に存在する classes ディレクトリを指して計装対象なしにする（ルートは publish もしない）。
+    jacocoInstrumentedDirectory := (Compile / classDirectory).value,
   )
 
 // ライブラリプロジェクト（publish対象）
@@ -113,6 +128,6 @@ lazy val example = (project in file("example"))
   .dependsOn(library)
 
 // 既存のコマンドエイリアスを維持
-addCommandAlias("lint", ";scalafmtCheck;test:scalafmtCheck;scalafmtSbtCheck;scalafixAll --check;javafmtCheckAll")
+addCommandAlias("lint", ";scalafmtCheck;Test/scalafmtCheck;scalafmtSbtCheck;scalafixAll --check;javafmtCheckAll")
 addCommandAlias("fmt", ";scalafmtAll;scalafmtSbt;scalafix RemoveUnused;javafmtAll")
 addCommandAlias("testCoverage", ";test;jacocoAggregateReport")
