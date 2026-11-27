@@ -28,7 +28,7 @@ object Dependencies {
   }
 
   object logback {
-    val classic = "ch.qos.logback" % "logback-classic" % "1.5.34"
+    val classic = "ch.qos.logback" % "logback-classic" % "1.6.6"
   }
 
   object slf4j {
@@ -37,15 +37,15 @@ object Dependencies {
   }
 
   object fasterxml {
-    val jacksonModuleScala = "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.22.0"
+    val jacksonModuleScala = "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.23.0"
   }
 
   object postgresql {
-    val postgresql = "org.postgresql" % "postgresql" % "42.7.11"
+    val postgresql = "org.postgresql" % "postgresql" % "42.7.14"
   }
 
   object scalameta {
-    val munit = "org.scalameta" %% "munit" % "1.3.3"
+    val munit = "org.scalameta" %% "munit" % "1.3.6"
   }
 
   object scalatest {
@@ -60,9 +60,9 @@ object Dependencies {
   }
 
   object circe {
-    val core = "io.circe" %% "circe-core" % "0.14.15"
-    val generic = "io.circe" %% "circe-generic" % "0.14.15"
-    val parser = "io.circe" %% "circe-parser" % "0.14.15"
+    val core = "io.circe" %% "circe-core" % "0.14.17"
+    val generic = "io.circe" %% "circe-generic" % "0.14.17"
+    val parser = "io.circe" %% "circe-parser" % "0.14.17"
   }
 
   object airframe {

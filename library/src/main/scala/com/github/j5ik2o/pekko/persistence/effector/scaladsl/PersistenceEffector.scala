@@ -327,8 +327,11 @@ object PersistenceEffector {
       recoveryAdapter,
       backoffConfig,
     )
+    // The parent fails when the store stops, instead of waiting for a reply that never comes
+    context.watch(persistenceRef)
 
     val adapter = context.messageAdapter[PersistenceReply[S, E]] {
+      case failure: PersistEventsFailure[?, ?] => failure.asInstanceOf[M]
       case PersistSingleEventSucceeded(event) => wrapPersistedEvents(Seq(event))
       case PersistMultipleEventsSucceeded(events) => wrapPersistedEvents(events)
       case PersistSnapshotSucceeded(snapshot) => wrapPersistedSnapshot(snapshot)
@@ -341,29 +344,31 @@ object PersistenceEffector {
 
     def awaitRecovery(): Behavior[M] =
       Behaviors.withStash(config.stashSize) { stashBuffer =>
-        Behaviors.receiveMessagePartial { msg =>
-          msg.asMatchable match {
-            case msg: RecoveryCompletedInternal[?] =>
-              val state = msg.asInstanceOf[RecoveryCompletedInternal[S]].state
-              val sequenceNr = msg.asInstanceOf[RecoveryCompletedInternal[S]].sequenceNr
-              context.log.debug(
-                "Recovery completed. State = {}, SequenceNr = {}",
-                state,
-                sequenceNr,
-              )
-              val effector = new DefaultPersistenceEffector[S, E, M](
-                context,
-                stashBuffer,
-                config,
-                persistenceRef,
-                adapter,
-                sequenceNr,
-              )
-              stashBuffer.unstashAll(onReady(state, effector))
-            case other =>
-              context.log.debug("Stashing message during recovery: {}", other)
-              stashBuffer.stash(other)
-              Behaviors.same
+        DefaultPersistenceEffector.failOnStoreStopped(context, stashBuffer, persistenceRef, persistenceId) {
+          Behaviors.receiveMessagePartial[M] { msg =>
+            msg.asMatchable match {
+              case msg: RecoveryCompletedInternal[?] =>
+                val state = msg.asInstanceOf[RecoveryCompletedInternal[S]].state
+                val sequenceNr = msg.asInstanceOf[RecoveryCompletedInternal[S]].sequenceNr
+                context.log.debug(
+                  "Recovery completed. State = {}, SequenceNr = {}",
+                  state,
+                  sequenceNr,
+                )
+                val effector = new DefaultPersistenceEffector[S, E, M](
+                  context,
+                  stashBuffer,
+                  config,
+                  persistenceRef,
+                  adapter,
+                  sequenceNr,
+                )
+                stashBuffer.unstashAll(onReady(state, effector))
+              case other =>
+                context.log.debug("Stashing message during recovery: {}", other)
+                stashBuffer.stash(other)
+                Behaviors.same
+            }
           }
         }
       }
